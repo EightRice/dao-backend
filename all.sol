@@ -124,7 +124,7 @@ contract Project{
         return true;
     }
 
-    function setRepWeiValuePerGweiTokenValue(uint256 _repWeiPerPaymentGwei) external {
+    function setRepWeiValuePerGweiTokenValue(uint256 _repWeiPerPaymentGwei)public {
         require(msg.sender==sourcingLead);
         repWeiPerPaymentGwei = _repWeiPerPaymentGwei;
     }
@@ -179,7 +179,7 @@ contract Project{
     function approveMilestone(uint256 _approvalAmount) external {
         require(msg.sender == client && outstandingInvoice > 0);
         approvalAmount = _approvalAmount;  // 
-        if (_amount>=outstandingInvoice && _amount<=paymentToken.balanceOf(address(this))){
+        if (_approvalAmount>=outstandingInvoice && _approvalAmount<=paymentToken.balanceOf(address(this))){
             _releaseMilestoneFunds();
         }else{
             status = ProjectStatus.milestoneInDispute;
