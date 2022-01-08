@@ -3,22 +3,37 @@ pragma solidity 0.8.7;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-
 contract RepToken is ERC20 {
-    constructor(uint256 initialSupply) ERC20 ("dORG Reputation", "DRT") public {
+    constructor(uint256 initialSupply) ERC20 ("dORG Reputation", "DRT")  {
         _mint(msg.sender, initialSupply);
     }
 }
 
 contract Source {
-    mapping(address =>Human) humans;
+    // mapping(address =>Human) humans;
     mapping(address=>Project) projects;
     event HumanCreated(address _human);
     event ProjectCreated(address _project);
+    RepToken repToken;
+    uint256 INITIAL_SUPPLY=9*10**16;
+    constructor (){
+        repToken=new RepToken(INITIAL_SUPPLY);
+    }
 
-    function createProject(address payable _client, address payable _arbiter, address _paymentTokenAddress, uint256 _votingDuration) {
-        project = new Project(msg.sender, _client, _arbiter, postLink, _paymentTokenAddress, _votingDuration);
-        project.addDev(new_devs);
+
+    function createProject(address payable _client, address payable _arbiter, address _paymentTokenAddress, uint8 _votingDuration)
+    public
+     {
+               
+
+        Project project = new Project(
+        payable(msg.sender),
+         _client,
+        _arbiter, 
+        address(repToken),
+        _paymentTokenAddress,
+        _votingDuration);
+        
     }
     
 }
@@ -29,8 +44,8 @@ contract Source {
 contract Project{
     // it should be Multisig Escrow.
     // Three signature: client, builders, arbiter
-    Source source;
-    RepToken token;
+    Source public source;
+    RepToken public repToken;
     enum ProjectStatus {proposal, active, inactive, completed}
     ProjectStatus public status;
     uint256 public votes_pro;
@@ -38,7 +53,7 @@ contract Project{
     uint256 public numberOfVotes;
     uint256 public quorum;
 
-    uint256 public votingDuration;  // in days
+
 
     IERC20 public paymentToken;
     
@@ -47,32 +62,30 @@ contract Project{
     bool public milestoneApproved =false;
     address payable public client;
     address payable public sourcingLead;
-    uint8 public votingDuration;
+    uint8 public votingDuration; // in days
     address payable public arbiter;
     address payable[] devs;
     bool public urgent;
-
+    uint256 public startingTime;
     uint8 public QUOTA = 50;
 
     function sendToken(address _to, uint256 _amount) public {
-        token.transfer(_to, _amount);
+        repToken.transfer(_to, _amount);
     }
     event MilestoneApproved();
     constructor(address payable _sourcingLead,
                 address payable _client,
                 address payable _arbiter,
-                string memory postLink,
-                address payable[] memory parties,
+                address repTokenAddress,
                 address _paymentTokenAddress,
                 uint8 _votingDuration)  {
-        forumLink=postLink;  // 
+         
         status=ProjectStatus.proposal;
         sourcingLead=_sourcingLead;
         client=_client;
         arbiter=_arbiter;
-        
         source = Source(msg.sender);
-        token=RepToken(tokenAddress);
+        repToken=RepToken(repTokenAddress);
         startingTime = block.timestamp;
         votingDuration = _votingDuration;
         _changePaymentMethod(_paymentTokenAddress);
@@ -82,32 +95,32 @@ contract Project{
         // if the duration is less than a week, then set flag to 1
         if(block.timestamp - startingTime > votingDuration * 86400 ){
             _registerVote();
-            return False;
+            return false;
         }
-        uint256 vote=token.balanceOf(msg.sender);
+        uint256 vote=repToken.balanceOf(msg.sender);
         if (decision){
             votes_pro += vote ;// add safeMath
         } else {
             votes_against += vote;  // add safeMath
         }
         numberOfVotes += 1;
-        return True;
+        return true;
     }
 
 
     function addDev (address payable _dev) public {
         // add require only majority or sourcing lead and source contract
-        require(msg.sender==sourcingLead || msg.sender==source.address);
+        require(msg.sender==sourcingLead || msg.sender==address(source));
         devs.push(_dev);
     }
 
-    function _changePaymentMethod(address _tokenAddress) external {
-        require(msg.sender == source.address || msg.sender== client);
-        paymentToken = IRC20(_tokenAddress);
+    function _changePaymentMethod(address _tokenAddress) public {
+        require(msg.sender == address(source) || msg.sender== sourcingLead);
+        paymentToken = IERC20(_tokenAddress);
     }
 
     function _registerVote()  internal {
-        if (votes_for > votes_against) {
+        if (votes_pro > votes_against) {
             status = ProjectStatus.active;
        
         } else {
@@ -117,16 +130,11 @@ contract Project{
         }
     }
     
-    function dividends()public payable{
-        uint256 total = address(this).balance;
-        for (uint256 i = 0; i < team.length; i++) {
-            team[i].transfer((total * (shares[i] * 100)) / 10000);
-        }
-    }
+    
 
     function _returnFunds() internal {
         // return funds to client
-        paymentToken.transfer(client, paymentToken.balanceOf(this));
+        paymentToken.transfer(client, paymentToken.balanceOf(address(this)));
     }
 
 
@@ -134,10 +142,10 @@ contract Project{
         // client approves milestone, i.e. approve payment to the developer
         require(msg.sender == client);
         milestoneApproved = true;
-        uint256 total = paymentToken.balanceOf(this);
+        uint256 total = paymentToken.balanceOf(address(this));
         // NOTE; Might be issues with calculating the 10 % percent of the other splits
-        tenpercent=((total * 1000) / 10000);
-        paymentToken.transfer(source, tenpercent);  
+        uint256 tenpercent=((total * 1000) / 10000);
+        paymentToken.transfer(address(source), tenpercent);  
         // Record this event.
         emit MilestoneApproved();
 
@@ -149,7 +157,7 @@ contract Project{
     // if milestoneApproved==true and the distribution is not vetoed,
     // earnings[dev] += _amount
 
-    _payout (address payable _human, uint256 _amount) internal {
+   function _payout (address payable _human, uint256 _amount) internal {
         
         paymentToken.transfer(_human, _amount);
     }
@@ -157,13 +165,13 @@ contract Project{
     function sumbitPaymentRequest(uint256 _amount) public {
     //   if milestoneApproved==true)
         // require(msg.sender in dev)
-        proposals[msg.sender].amount = _amount;
+        payments[msg.sender].amount = _amount;
     }
 
 
     struct paymentProposal {
-        amount uint256;
-        numberOfApprovals uint16
+        uint256 amount ;
+        uint16 numberOfApprovals;
     }
 
 
@@ -174,19 +182,19 @@ contract Project{
             if (msg.sender==devs[i]){
                 continue;
             }
-            approveOne(devs[i])
+            approveOne(devs[i]);
         }
     }
+    mapping(address=>paymentProposal) payments;
 
-
-    function approveOne(address dev) public {
+    function approveOne(address payable dev) public {
         // requirements here
         // TODO: only Devs may call this, otherwise a proxy could call it
         require(dev != msg.sender);
 
-        proposals[dev].numberOfApprovals += 1;
-        if (proposals[dev].numberOfApproval > (devs.length * QUOTA / 100)) {
-            _payout(dev, proposals[dev].amount);
+        payments[dev].numberOfApprovals += 1;
+        if (payments[dev].numberOfApprovals > (devs.length * QUOTA / 100)) {
+            _payout(dev, payments[dev].amount);
         }
         // check whether quota is reached.
         
