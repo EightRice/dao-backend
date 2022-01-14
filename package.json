@@ -1,0 +1,34 @@
+{
+  "name": "daoification",
+  "version": "1.0.0",
+  "description": "contracts and workflow pertaining to the DAO part of dOrg",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dOrgTech/daoification.git"
+  },
+  "keywords": [
+    "DAO",
+    "dOrg",
+    "decentralization",
+    "workflow",
+    "project",
+    "life",
+    "cycle"
+  ],
+  "author": "dOrg",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "bugs": {
+    "url": "https://github.com/dOrgTech/daoification/issues"
+  },
+  "homepage": "https://github.com/dOrgTech/daoification#readme",
+  "dependencies": {
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "@openzeppelin/contracts": "^4.4.2",
+    "ethers": "^5.5.3",
+    "hardhat": "^2.8.2"
+  }
+}

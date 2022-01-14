@@ -1,0 +1,12 @@
+# Environments
+.env
+.venv
+
+# Docker
+.dockerignore
+
+# packages
+*node_modules
+
+# Hardhat
+cache
