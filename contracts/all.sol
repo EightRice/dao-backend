@@ -1,4 +1,4 @@
-pragma solidity 0.8.7;
+pragma solidity ^0.8.7;
 //SPDX-License-Identifier: Unlicense
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -7,11 +7,18 @@ contract RepToken is ERC20 {
     constructor(uint256 initialSupply) ERC20 ("dORG Reputation", "DRT")  {
         _mint(msg.sender, initialSupply);
     }
+
+    // TODO! MUST BE REMOVED
+    function FREEMINTING(uint256 amount) external {
+        _mint(msg.sender, amount);
+    }
+    
 }
 
 contract Source {
     // mapping(address =>Human) humans;
     address[] public projects;
+    uint256 public numberOfProjects;
     event HumanCreated(address _human);
     event ProjectCreated(address _project);
     RepToken public repToken;
@@ -25,14 +32,16 @@ contract Source {
     function createProject(address payable _client, address payable _arbiter, address _paymentTokenAddress, uint8 _votingDuration)
     public
      {
-        Project project = new Project(
-        payable(msg.sender),
-         _client,
-        _arbiter, 
-        address(repToken),
-        _paymentTokenAddress,
-        _votingDuration);
-        projects.push(address(project));
+        projects.push(
+            address(new Project(
+                            payable(msg.sender),
+                            _client,
+                            _arbiter, 
+                            address(repToken),
+                            _paymentTokenAddress,
+                            _votingDuration)
+                    ));
+        numberOfProjects += 1;
     }
     
 }
@@ -61,13 +70,13 @@ contract Project{
     bool public milestoneApproved =false;
     address payable public client;
     address payable public sourcingLead;
-    uint8 public votingDuration; // in days
+    uint8 public votingDuration; // in seconds (1 day = 86400)
     address payable public arbiter;
     address payable[] team;
     uint256 public startingTime;
     uint256 public approvalAmount;
     bool milestoneDisputed=false;
-    uint256 outstandingInvoice=0;
+    uint256 public outstandingInvoice=0;
     uint8 public PAYMENT_APPROVAL_QUOTA = 50;
     // can be called by an oracle or querying an exchange.
     uint256 public repWeiPerPaymentGwei = 10**9;  // 10**9 for stablecoin
@@ -76,8 +85,8 @@ contract Project{
     // where the repToPaymentRatio = 3000 * 10 ** 9
 
     struct paymentProposal {
-        uint256 amount ;
-        uint16 numberOfApprovals;        
+        uint256 amount ;  // TODO: diminish the size here from uint256 to something smaller
+        uint16 numberOfApprovals;         
     }
 
     // enum paymentApprovalStatus {requested, approved, denied}
@@ -110,7 +119,7 @@ contract Project{
 
     function voteOnProject(bool decision) external returns(bool){
         // if the duration is less than a week, then set flag to 1
-        if(block.timestamp - startingTime > votingDuration * 86400 ){
+        if(block.timestamp - startingTime > votingDuration ){ 
             _registerVote();
             return false;
         }
@@ -125,7 +134,7 @@ contract Project{
     }
 
     function setRepWeiValuePerGweiTokenValue(uint256 _repWeiPerPaymentGwei)public {
-        require(msg.sender==sourcingLead);
+        require(msg.sender == address(source) || msg.sender==sourcingLead);
         repWeiPerPaymentGwei = _repWeiPerPaymentGwei;
     }
 
@@ -141,14 +150,24 @@ contract Project{
     }
 
 
-    function _changePaymentMethod(address _tokenAddress, uint256 _repWeiPerPaymentGwei) public {
-        require(msg.sender == address(source) || msg.sender== sourcingLead);
+    function changePaymentMethod(address _tokenAddress, uint256 _repWeiPerPaymentGwei) external {
+        require(paymentToken.balanceOf(address(this))==0, "Previous Token needs to be depleted before the change");
+        _changePaymentMethod(_tokenAddress, _repWeiPerPaymentGwei);
+    }
+
+    function _changePaymentMethod(address _tokenAddress, uint256 _repWeiPerPaymentGwei) internal {
+        require(msg.sender == address(source) || msg.sender== sourcingLead, "source or sourcing Lead!");
         paymentToken = IERC20(_tokenAddress);
         // set the new ratio.
         setRepWeiValuePerGweiTokenValue(_repWeiPerPaymentGwei);
     }
 
-    function _registerVote()  internal {
+    function registerVote() external {
+        require(block.timestamp - startingTime > votingDuration, "Voting is still ongoing");
+        _registerVote();
+    }
+
+    function _registerVote() internal {
         if (votes_pro > votes_against) {
             status = ProjectStatus.active;
        
@@ -218,6 +237,8 @@ contract Project{
         // send back the rest to client
         if (clientAmount>0){
             _returnFundsToClient(clientAmount);
+            // important to set th outstandingInvoice back!!
+            outstandingInvoice = 0;
         }
 
         // Record this event.
@@ -250,12 +271,13 @@ contract Project{
     function sumbitPaymentRequest(uint256 _amount) public {
     //   if milestoneApproved==true)
         // require(msg.sender in dev)
+        // APPROVEALL MUST HAPPEN AFTER PAYMENT REQUEST.
         payments[msg.sender].amount = _amount;
     }
     // withdraw funds to treasury if voted by everyone.
 
 
-    function approveAll(bool _vote) external {
+    function approveAll() external {
         for (uint i=0; i< team.length; i++){
             if (msg.sender==team[i]){
                 continue;
