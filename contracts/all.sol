@@ -3,28 +3,46 @@ pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+
 contract RepToken is ERC20 {
-    constructor(uint256 initialSupply) ERC20 ("dORG Reputation", "DRT")  {
-        _mint(msg.sender, initialSupply);
+    address public source;
+    
+    constructor(string memory name, string memory symbol) ERC20 (name, symbol)  {
+        // _mint(msg.sender, initialSupply);
+        source = msg.sender;
     }
+
 
     // TODO! MUST BE REMOVED
     function FREEMINTING(uint256 amount) external {
         _mint(msg.sender, amount);
     }
-    
+
+    function mint(address holder, uint256 amount) external {
+        require(msg.sender==source);
+        _mint(holder, amount);
+    } 
 }
 
-contract Source {
+
+contract dOrgFactory {
+    function create_dOrg(string memory name, string memory symbol) external {
+        Source source = new Source(name, symbol);
+        // source
+    }
+}
+
+contract Source {  // maybe ERC1820
     // mapping(address =>Human) humans;
     address[] public projects;
     uint256 public numberOfProjects;
     event HumanCreated(address _human);
     event ProjectCreated(address _project);
     RepToken public repToken;
-    uint256 INITIAL_SUPPLY=9*10**16;
-    constructor (){
-        repToken=new RepToken(INITIAL_SUPPLY);
+    uint256 INITIAL_SUPPLY=0; // 9*10**16;
+    constructor (string memory name, string memory symbol){
+
+        repToken = new RepToken(name, symbol);
     }
     
     //add function to retrieve all projects
@@ -32,17 +50,38 @@ contract Source {
     function createProject(address payable _client, address payable _arbiter, address _paymentTokenAddress, uint8 _votingDuration)
     public
      {
-        projects.push(
-            address(new Project(
-                            payable(msg.sender),
-                            _client,
-                            _arbiter, 
-                            address(repToken),
-                            _paymentTokenAddress,
-                            _votingDuration)
-                    ));
+        Project project = new Project(
+                                payable(msg.sender),
+                                _client,
+                                _arbiter,
+                                address(repToken),
+                                _paymentTokenAddress,
+                                _votingDuration);
+        projects.push(address(project));
+        _isProject[address(project)] = true;
         numberOfProjects += 1;
     }
+
+    mapping(address=>bool) public _isProject;
+
+    function mintRepTokens(address payable payee, uint256 amount) external{
+        require(_isProject[msg.sender]);
+        repToken.mint(payee, amount);
+    }
+
+    // function _migrate(address payable newSource) public {
+    //     uint256 threshold = 80;  // TODO: CHekc whether this works on remix
+    //     // if (migrationVote[newSource] > (repToken.totalSupply * threshold) / 100){
+            
+    //     }
+    // // }
+
+    // mapping (address=>uint256) public migrationVote;
+
+    
+    // function approveMigration(address newSource) external {
+    //     migrationVote[newSource] += repToken.balanceOf(msg.sender);
+    // }
     
 }
 
@@ -64,9 +103,7 @@ contract Project{
 
 
     IERC20 public paymentToken;
-    
     string public forumLink;
-    
     bool public milestoneApproved =false;
     address payable public client;
     address payable public sourcingLead;
@@ -79,7 +116,9 @@ contract Project{
     uint256 public outstandingInvoice=0;
     uint8 public PAYMENT_APPROVAL_QUOTA = 50;
     // can be called by an oracle or querying an exchange.
-    uint256 public repWeiPerPaymentGwei = 10**9;  // 10**9 for stablecoin
+    uint256 public repWeiPerPaymentGwei = 10**9;  // 10**9; for stablecoin
+
+    uint256 public vetoDurationForPayments = 4 * 86400 ;// in seconds
     // You earn one WETH, then how many reptokens you get?
     // (10**18) * (repToPaymentRatio) / (10 ** 9)
     // where the repToPaymentRatio = 3000 * 10 ** 9
@@ -89,13 +128,28 @@ contract Project{
         uint16 numberOfApprovals;         
     }
 
-    // enum paymentApprovalStatus {requested, approved, denied}
+    struct Milestone {
+        bool approved;
+        bool inDispute;
+        uint256 requestedAmount;
+        bytes32 requirementsCid;
+        uint256 payrollVetoDeadline;
+        address[] payees;
+        address[] payments;
+    }
+
+    Milestone[] public milestones;  // holds all the milestones of the project
     
+    
+
     mapping(address=>paymentProposal) public payments;
     
     mapping(address=>bool) _isTeamMember;
 
-    event MilestoneApproved();
+    event MilestoneApproved(uint256 milestoneIndex, uint256 approvedAmount);
+    event RequestedAmountAddedToMilestone(uint256 milestoneIndex, uint256 requetedAmount);
+    event PayrollRosterSubmitted(uint256 milestoneIndex);
+
     constructor(address payable _sourcingLead,
                 address payable _client,
                 address payable _arbiter,
@@ -116,6 +170,10 @@ contract Project{
         _changePaymentMethod(_paymentTokenAddress, repWeiPerPaymentGwei);
         
     }
+
+    /*
+    VOTING ON THE PROJECT
+    */
 
     function voteOnProject(bool decision) external returns(bool){
         // if the duration is less than a week, then set flag to 1
@@ -149,6 +207,54 @@ contract Project{
         _isTeamMember[_teamMember] = true;
     }
 
+    mapping(address=>mapping(address=>bool)) excludeMember;
+    mapping(address=>uint16) public voteToExclude;
+    uint256 exclusionThreshold = 80;
+    
+    function excludeFromTeam(address _teamMember) internal {
+        // TODO!!!with some vetos or majority
+        require(excludeMember[msg.sender][_teamMember] == false);
+        excludeMember[msg.sender][_teamMember] = true;
+        voteToExclude[_teamMember] += 1;
+
+        if (voteToExclude[_teamMember]> (team.length * exclusionThreshold ) / 100){
+            _isTeamMember[_teamMember]= false;
+        }
+    }
+
+
+    /*
+    MILESTONE HANDLING
+    */
+
+    function addMilestone(bytes32 requirementsCid) public {
+        require(msg.sender == sourcingLead,"Only the sourcing lead can add milestones");
+        milestones.push(Milestone({
+            // approved: false,
+            // requestedAmount: 0,
+            requirementsCid: requirementsCid
+            // payees: [],
+            // payments: []
+        }));
+    }
+
+    function addAmountToMilestone(uint256 milestoneIndex, uint256 amount)public{
+        require(msg.sender == sourcingLead,"Only the sourcing lead can request payment from client");
+        milestones[milestoneIndex].requestedAmount = amount;
+        emit RequestedAmountAddedToMilestone(milestoneIndex, amount);
+    }
+
+    function approveMilestone(uint256 milestoneIndex) public {
+        require(msg.sender == client,"Only the client can approve a milestone");
+        milestones[milestoneIndex].approved = true;
+        emit MilestoneApproved(milestoneIndex, milestones[milestoneIndex].requestedAmount);
+        _releaseMilestoneFunds(milestoneIndex);
+    }
+
+
+
+
+
 
     function changePaymentMethod(address _tokenAddress, uint256 _repWeiPerPaymentGwei) external {
         require(paymentToken.balanceOf(address(this))==0, "Previous Token needs to be depleted before the change");
@@ -161,6 +267,7 @@ contract Project{
         // set the new ratio.
         setRepWeiValuePerGweiTokenValue(_repWeiPerPaymentGwei);
     }
+
 
     function registerVote() external {
         require(block.timestamp - startingTime > votingDuration, "Voting is still ongoing");
@@ -187,74 +294,79 @@ contract Project{
 
     // dev A doesnt withdraw --> then the con 
   
-     function invoiceClient(uint256 _amount) public {
+
+    function invoiceClient(uint256 _amount) public {
          //the sourcingLead can claim the milestone
         require(msg.sender==sourcingLead);
         
         outstandingInvoice=_amount;
-     }
-
-
-    function approveMilestone(uint256 _approvalAmount) external {
-        require(msg.sender == client && outstandingInvoice > 0);
-        approvalAmount = _approvalAmount;  // 
-        if (_approvalAmount>=outstandingInvoice && _approvalAmount<=paymentToken.balanceOf(address(this))){
-            _releaseMilestoneFunds();
-        }else{
-            status = ProjectStatus.milestoneInDispute;
-        }
-        
     }
 
 
-    function dispute() public {
+
+    function dispute(uint256 milestoneIndex) public {
         require(msg.sender == client || msg.sender==sourcingLead );
-        status = ProjectStatus.milestoneInDispute;
+        milestones[milestoneIndex].inDispute = true;
     }
    
-    function artbitration(bool inFavourOfInvoice)public{
-        require(msg.sender == arbiter && status==ProjectStatus.milestoneInDispute);
-        if (inFavourOfInvoice){
+    function artbitration(uint256 milestoneIndex, bool forInvoice)public{
+        require(msg.sender == arbiter && milestones[milestoneIndex].inDispute);
+        if (forInvoice){
            approvalAmount = outstandingInvoice;
-            }
-        status = ProjectStatus.active;
-        _releaseMilestoneFunds();
+           milestones[milestoneIndex].approved = true;
+        }
+
+        
+        milestones[milestoneIndex].inDispute = false;
+        
     }
 
 
-    function _releaseMilestoneFunds() internal {
-        // client approves milestone, i.e. approve payment to the developer
+    function submitPayrollRoster(uint256 milestoneIndex, address[] memory payees, uint256[] memory amounts ) external {
+        require(msg.sender==sourcingLead && payees.length == amounts.length);
+        // for(uint256 i; i<payees; i++){
+        //     payments[]
+        // }
+        milestones[milestoneIndex].payrollVetoDeadline = block.timestamp + vetoDurationForPayments;
         
-        
-        milestoneApproved = true;
+        emit PayrollRosterSubmitted(milestoneIndex);  // maybe milestones[milestoneIndex].payrollVetoDeadline
+    }
 
-        uint256 totalAmount = paymentToken.balanceOf(address(this));
-        uint256 clientAmount = totalAmount - approvalAmount;  //safeMath!!
+    // add function if its vetoed
+    function vetoPayrollRoster(uint256 milestoneIndex) public{
+        require(_isTeamMember[msg.sender]);
+        milestones[milestoneIndex].payments = [];  // TODO: think about storage 
+    }
+
+
+    function _releaseMilestoneFunds(uint256 milestoneIndex) internal {
+        // client approves milestone, i.e. approve payment to the developer
+        require(milestones[milestoneIndex].approved);
 
         // NOTE; Might be issues with calculating the 10 % percent of the other splits
-        uint256 tenpercent=((approvalAmount * 1000) / 10000);
-        paymentToken.transfer(address(source), tenpercent);  
-        // send back the rest to client
-        if (clientAmount>0){
-            _returnFundsToClient(clientAmount);
-            // important to set th outstandingInvoice back!!
-            outstandingInvoice = 0;
-        }
+        uint256 tenpercent=((milestones[milestoneIndex].requestedAmount * 1000) / 10000);
+        paymentToken.transfer(address(source), tenpercent); 
 
-        // Record this event.
-        emit MilestoneApproved();
     }
 
-   function _payout (address payable _human, uint256 _amount) internal {
-        require(milestoneApproved);
-        paymentToken.transfer(_human, _amount);
-        // send repTokens
-        uint256 _repAmount = _amount * repWeiPerPaymentGwei / (10 ** 9);
-        repToken.transfer(_human, _repAmount);
-        if (paymentToken.balanceOf(address(this))==0){
-            // NOTE: HOw to make sure that this is not a minimal amount left
-            _startNewMilestone();
+   function payout (uint256 milestoneIndex) external {
+        require(milestones[milestoneIndex].approved);
+        
+        require(block.timestamp > milestones[milestoneIndex].payrollVetoDeadline);
+        uint256 _repAmount;
+        for (uint i=0; i< milestones[milestoneIndex].payees.length; i++){
+            paymentToken.transfer(milestones[milestoneIndex].payees[i], milestones[milestoneIndex].payments[i]);
+            source.mintRepTokens(milestones[milestoneIndex].payees[i], milestones[milestoneIndex].payments[i]);
+            // _repAmount = _amount * repWeiPerPaymentGwei / (10 ** 9);
+            
         }
+        // // send repTokens
+        // uint256 _repAmount = _amount * repWeiPerPaymentGwei / (10 ** 9);
+        // repToken.transfer(_human, _repAmount);
+        // if (paymentToken.balanceOf(address(this))==0){
+        //     // NOTE: HOw to make sure that this is not a minimal amount left
+        //     _startNewMilestone();
+        // }
     }
 
     function _startNewMilestone() internal {
@@ -302,5 +414,6 @@ contract Project{
    
 
 }
+
 
 
