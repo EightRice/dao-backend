@@ -161,6 +161,7 @@ contract Project{
         status=ProjectStatus.proposal;
         sourcingLead=_sourcingLead;
         team.push(sourcingLead);
+        _isTeamMember[sourcingLead] = true;
         client=_client;
         arbiter=_arbiter;
         source = Source(msg.sender);
