@@ -25,12 +25,16 @@ contract RepToken is ERC20 {
 }
 
 
-contract dOrgFactory {
-    function create_dOrg(string memory name, string memory symbol) external {
-        Source source = new Source(name, symbol);
-        // source
-    }
-}
+// interface ISource {
+
+// }
+
+// contract dOrgFactory {
+//     function create_dOrg(string memory name, string memory symbol) external {
+//         Source source = new Source(name, symbol);
+//         // source
+//     }
+// }
 
 contract Source {  // maybe ERC1820
     // mapping(address =>Human) humans;
@@ -352,7 +356,6 @@ contract Project{
         require(milestones[milestoneIndex].approved);
         
         require(block.timestamp > milestones[milestoneIndex].payrollVetoDeadline);
-        uint256 _repAmount;
         for (uint i=0; i< milestones[milestoneIndex].payees.length; i++){
             paymentToken.transfer(milestones[milestoneIndex].payees[i], milestones[milestoneIndex].payments[i]);
             source.mintRepTokens(milestones[milestoneIndex].payees[i], milestones[milestoneIndex].payments[i]);
