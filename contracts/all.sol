@@ -134,21 +134,22 @@ contract Project{
         uint256 requestedAmount;
         bytes32 requirementsCid;
         uint256 payrollVetoDeadline;
-        address[] payees;
-        address[] payments;
+        address payable[] payees;
+        uint256[] payments;
     }
 
     Milestone[] public milestones;  // holds all the milestones of the project
-    
-    
 
     mapping(address=>paymentProposal) public payments;
-    
     mapping(address=>bool) _isTeamMember;
+    mapping(address=>mapping(address=>bool)) excludeMember;
+    mapping(address=>uint16) public voteToExclude;
+    uint256 exclusionThreshold = 80;
 
     event MilestoneApproved(uint256 milestoneIndex, uint256 approvedAmount);
     event RequestedAmountAddedToMilestone(uint256 milestoneIndex, uint256 requetedAmount);
     event PayrollRosterSubmitted(uint256 milestoneIndex);
+    event Disputed(address disputer, uint256 milestoneIndex);
 
     constructor(address payable _sourcingLead,
                 address payable _client,
@@ -207,9 +208,6 @@ contract Project{
         _isTeamMember[_teamMember] = true;
     }
 
-    mapping(address=>mapping(address=>bool)) excludeMember;
-    mapping(address=>uint16) public voteToExclude;
-    uint256 exclusionThreshold = 80;
     
     function excludeFromTeam(address _teamMember) internal {
         // TODO!!!with some vetos or majority
@@ -229,12 +227,16 @@ contract Project{
 
     function addMilestone(bytes32 requirementsCid) public {
         require(msg.sender == sourcingLead,"Only the sourcing lead can add milestones");
+        address payable[] memory NoPayees;
+        uint256[] memory NoPayments;
         milestones.push(Milestone({
-            // approved: false,
-            // requestedAmount: 0,
-            requirementsCid: requirementsCid
-            // payees: [],
-            // payments: []
+            approved: false,
+            inDispute: false,
+            requestedAmount: 0,
+            requirementsCid: requirementsCid,
+            payrollVetoDeadline: 0,
+            payees: NoPayees,
+            payments: NoPayments
         }));
     }
 
@@ -250,9 +252,6 @@ contract Project{
         emit MilestoneApproved(milestoneIndex, milestones[milestoneIndex].requestedAmount);
         _releaseMilestoneFunds(milestoneIndex);
     }
-
-
-
 
 
 
@@ -307,6 +306,7 @@ contract Project{
     function dispute(uint256 milestoneIndex) public {
         require(msg.sender == client || msg.sender==sourcingLead );
         milestones[milestoneIndex].inDispute = true;
+        emit Disputed(msg.sender, milestoneIndex);
     }
    
     function artbitration(uint256 milestoneIndex, bool forInvoice)public{
@@ -316,17 +316,14 @@ contract Project{
            milestones[milestoneIndex].approved = true;
         }
 
-        
-        milestones[milestoneIndex].inDispute = false;
-        
+        _returnFundsToClient(paymentToken.balanceOf(address(this)));
+
+        milestones[milestoneIndex].inDispute = false;        
     }
 
 
     function submitPayrollRoster(uint256 milestoneIndex, address[] memory payees, uint256[] memory amounts ) external {
         require(msg.sender==sourcingLead && payees.length == amounts.length);
-        // for(uint256 i; i<payees; i++){
-        //     payments[]
-        // }
         milestones[milestoneIndex].payrollVetoDeadline = block.timestamp + vetoDurationForPayments;
         
         emit PayrollRosterSubmitted(milestoneIndex);  // maybe milestones[milestoneIndex].payrollVetoDeadline
@@ -335,7 +332,8 @@ contract Project{
     // add function if its vetoed
     function vetoPayrollRoster(uint256 milestoneIndex) public{
         require(_isTeamMember[msg.sender]);
-        milestones[milestoneIndex].payments = [];  // TODO: think about storage 
+        uint256 [] memory NoPayments;
+        milestones[milestoneIndex].payments = NoPayments;  // TODO: think about storage 
     }
 
 
@@ -349,7 +347,7 @@ contract Project{
 
     }
 
-   function payout (uint256 milestoneIndex) external {
+   function batchPayout (uint256 milestoneIndex) external {
         require(milestones[milestoneIndex].approved);
         
         require(block.timestamp > milestones[milestoneIndex].payrollVetoDeadline);
@@ -369,49 +367,7 @@ contract Project{
         // }
     }
 
-    function _startNewMilestone() internal {
-        // reset milestone approval flag
-        milestoneApproved = false;
-        // reset balances of all team
-        for (uint i=0; i<team.length; i++){
-            payments[team[i]].amount = 0;
-        }
-    }
 
-
-    
-    function sumbitPaymentRequest(uint256 _amount) public {
-    //   if milestoneApproved==true)
-        // require(msg.sender in dev)
-        // APPROVEALL MUST HAPPEN AFTER PAYMENT REQUEST.
-        payments[msg.sender].amount = _amount;
-    }
-    // withdraw funds to treasury if voted by everyone.
-
-
-    function approveAll() external {
-        for (uint i=0; i< team.length; i++){
-            if (msg.sender==team[i]){
-                continue;
-            }
-            approveOne(team[i]);
-        }
-    }
-
-    function approveOne(address payable teamMember) public {
-        // requirements here
-        // TODO: only team may call this, otherwise a proxy could call it
-        require(_isTeamMember[msg.sender]);
-
-        payments[teamMember].numberOfApprovals += 1;
-        if (payments[teamMember].numberOfApprovals > team.length * PAYMENT_APPROVAL_QUOTA / 100) {
-            _payout(teamMember, payments[teamMember].amount);
-        }
-    }
-
-    // to milestoneApproved= false
-
-   
 
 }
 
