@@ -36,6 +36,10 @@ contract RepToken is ERC20 {
 //     }
 // }
 
+contract ArbitrationEscrow {
+    mapping(address=>uint256) arbrationFee;  // project address => fee
+}
+
 contract Source {  // maybe ERC1820
     // mapping(address =>Human) humans;
     address[] public projects;
@@ -43,10 +47,13 @@ contract Source {  // maybe ERC1820
     event HumanCreated(address _human);
     event ProjectCreated(address _project);
     RepToken public repToken;
+    ArbitrationEscrow public arbitrationEscrow;
     uint256 INITIAL_SUPPLY=0; // 9*10**16;
     constructor (string memory name, string memory symbol){
 
         repToken = new RepToken(name, symbol);
+        arbitrationEscrow = new ArbitrationEscrow();
+
     }
     
     //add function to retrieve all projects
@@ -59,6 +66,7 @@ contract Source {  // maybe ERC1820
                                 _client,
                                 _arbiter,
                                 address(repToken),
+                                arbitrationEscrow,
                                 _paymentTokenAddress,
                                 _votingDuration);
         projects.push(address(project));
@@ -90,6 +98,8 @@ contract Source {  // maybe ERC1820
 }
 
 
+
+
 // builders Multisig
 
 contract Project{
@@ -97,7 +107,8 @@ contract Project{
     // Three signature: client, builders, arbiter
     Source public source;
     RepToken public repToken;
-    enum ProjectStatus {proposal, active, milestoneInDispute, inactive, completed}
+    ArbitrationEscrow public arbitrationEscrow;
+    enum ProjectStatus {proposal, active, inDispute, inactive, completed, rejected}
     ProjectStatus public status;
     uint256 public votes_pro;
     uint256 public votes_against;
@@ -146,27 +157,34 @@ contract Project{
 
     mapping(address=>paymentProposal) public payments;
     mapping(address=>bool) _isTeamMember;
-    mapping(address=>mapping(address=>bool)) excludeMember;
+    mapping(address=>mapping(address=>bool)) public excludeMember;
     mapping(address=>uint16) public voteToExclude;
-    uint256 exclusionThreshold = 80;
+    mapping (address=>mapping(address=>uint256)) public votesForNewSourcingLead;
+    mapping (address=>mapping(address=>bool)) public alreadyVotedForNewSourcingLead;
+    uint256 public defaultThreshold = 50;  // in percent
+    uint256 public exclusionThreshold = 50;  // in percent  
+    // TODO: Discuss in dOrg
+    // Maybe include Appeal
 
     event MilestoneApproved(uint256 milestoneIndex, uint256 approvedAmount);
     event RequestedAmountAddedToMilestone(uint256 milestoneIndex, uint256 requetedAmount);
     event PayrollRosterSubmitted(uint256 milestoneIndex);
-    event Disputed(address disputer, uint256 milestoneIndex);
+    event Disputed(address disputer);
 
     constructor(address payable _sourcingLead,
                 address payable _client,
                 address payable _arbiter,
                 address repTokenAddress,
+                ArbitrationEscrow _arbitrationEscrow,
                 address _paymentTokenAddress,
-                uint8 _votingDuration)  {
+                uint8 _votingDuration){
          
         status=ProjectStatus.proposal;
         sourcingLead=_sourcingLead;
         team.push(sourcingLead);
         _isTeamMember[sourcingLead] = true;
         client=_client;
+        arbitrationEscrow=_arbitrationEscrow;
         arbiter=_arbiter;
         source = Source(msg.sender);
         repToken=RepToken(repTokenAddress);
@@ -214,9 +232,9 @@ contract Project{
     }
 
     
-    function excludeFromTeam(address _teamMember) internal {
+    function excludeFromTeam(address _teamMember) external {
         // TODO!!!with some vetos or majority
-        require(excludeMember[msg.sender][_teamMember] == false);
+        require(excludeMember[msg.sender][_teamMember] == false && sourcingLead!=_teamMember);
         excludeMember[msg.sender][_teamMember] = true;
         voteToExclude[_teamMember] += 1;
 
@@ -224,6 +242,29 @@ contract Project{
             _isTeamMember[_teamMember]= false;
         }
     }
+    
+    function replaceSourcingLead(address _nominee) external {
+        require(_nominee!=sourcingLead);  // Maybe allow also sourcingLead to 
+        require(!alreadyVotedForNewSourcingLead[msg.sender][_nominee]);
+        votesForNewSourcingLead[msg.sender][_nominee] += 1;
+        alreadyVotedForNewSourcingLead[msg.sender][_nominee] = true;
+    }
+
+    function claimSourcingLead() external {
+        uint256 totalVotes = 0;
+        for (uint256 i=0; i<team.length; i++){
+            totalVotes += votesForNewSourcingLead[team[i]][msg.sender];
+        }
+        if (totalVotes > (team.length * defaultThreshold ) / 100) {
+            sourcingLead = payable(msg.sender);
+            // reset all the votes
+            for (uint256 i; i<team.length; i++){
+                votesForNewSourcingLead[team[i]][msg.sender] = 0;
+                alreadyVotedForNewSourcingLead[team[i]][msg.sender] = false;
+            }
+        }
+    }
+        
 
 
     /*
@@ -280,16 +321,32 @@ contract Project{
 
     function _registerVote() internal {
         if (votes_pro > votes_against) {
-            status = ProjectStatus.active;
+            // transact money into enscrow
+            status = ProjectStatus.inactive;
        
         } else {
-            status = ProjectStatus.inactive;
+            status = ProjectStatus.rejected;
             // in the case that the client had already some funds locked
             _returnFundsToClient(paymentToken.balanceOf(address(this)));
         }
     }
+
     
-    
+    function startProject() external {
+        // is there enough money in escrow and project deposited by client?
+        
+    }
+
+
+
+    // function allowFunds(_amount) {
+    //     paymentToken.approve(msg.sender, _amount);
+    // }
+
+    // function sendArbitrationFunds() {
+    //     paymentToken.transfer(msg.sender, _amount);
+    // }
+
 
     function _returnFundsToClient(uint256 _amount) internal {
         // return funds to client
@@ -308,22 +365,40 @@ contract Project{
 
 
 
-    function dispute(uint256 milestoneIndex) public {
+
+
+    function dispute(uint256[] memory milestoneIndices) external {
         require(msg.sender == client || msg.sender==sourcingLead );
-        milestones[milestoneIndex].inDispute = true;
-        emit Disputed(msg.sender, milestoneIndex);
+        for (uint256 j=0; j<milestoneIndices.length; j++){
+            milestones[milestoneIndices[j]].inDispute = true;
+            
+            // emit Disputed(msg.sender, milestoneIndices[j]);
+        }
+        status = ProjectStatus.inDispute;
+        emit Disputed(msg.sender);
+        // TODO: emit an event also in case that there are no milestone indices (for the client)
+
     }
    
-    function artbitration(uint256 milestoneIndex, bool forInvoice)public{
-        require(msg.sender == arbiter && milestones[milestoneIndex].inDispute);
+    function arbitration(bool forInvoice)public{
+        require(msg.sender == arbiter && status==ProjectStatus.inDispute);
         if (forInvoice){
-           approvalAmount = outstandingInvoice;
-           milestones[milestoneIndex].approved = true;
+            approvalAmount = outstandingInvoice;
+            for (uint256 j=0; j<milestones.length; j++){
+                // Maybe could be more cost efficient in future implementation
+                if (milestones[j].inDispute){
+                    milestones[j].approved = true;
+                    milestones[j].inDispute = false;  
+                }
+            }
+            // in current logic the status reverts to active irrespective of whether motion is for or agains invoice
+            // status = ProjectStatus.active;
         }
-
+        // client gets entire funds of the project
         _returnFundsToClient(paymentToken.balanceOf(address(this)));
 
-        milestones[milestoneIndex].inDispute = false;        
+        // what happens to the project?
+        status = ProjectStatus.active;  
     }
 
 
