@@ -8,8 +8,12 @@ import "./IProject.sol";
 import "./Arbitration.sol";
 import "./IVoting.sol";
 import "./Department.sol";
+import "./IDepartment.sol";
+import "./IClientProjectFactory.sol";
+import "./IInternalProjectFactory.sol";
 
 interface IArbitrationEscrow {}
+
 
 
 /// @title Main DAO contract
@@ -23,6 +27,8 @@ contract Source {  // maybe ERC1820
     IVoting public voting;
     RepToken public repToken;
     ArbitrationEscrow public arbitrationEscrow;
+    IClientProjectFactory public clientProjectFactory;
+    IInternalProjectFactory public internalProjectFactory;
 
     /* ========== LOCAL VARIABLES ========== */
 
@@ -43,7 +49,7 @@ contract Source {  // maybe ERC1820
 
     /* ========== CONSTRUCTOR ========== */
 
-    constructor (address paymentToken, address votingContract, string memory name, string memory symbol){
+    constructor (address votingContract, string memory name, string memory symbol){
         
         voting = IVoting(votingContract);
         repToken = new RepToken(name, symbol);
@@ -51,43 +57,54 @@ contract Source {  // maybe ERC1820
 
         // either at construction or after set default paymentToken
         paymentTokens.push(address(0x0));
-        setDefaultPaymentToken(paymentToken);
+
+        // actually set this with DAO vote
+        // setDefaultPaymentToken(paymentToken);
+    }
+
+    function setDeploymentFactories(address _clientProjectFactory, address _internalProjectFactory) external {
+        require(false, " requires DAO VOTE. To be implemented");
+        clientProjectFactory = IClientProjectFactory(_clientProjectFactory);
+        internalProjectFactory = IInternalProjectFactory(_internalProjectFactory);
+
     }
     
     
     /* ========== PROJECT HANDLING ========== */
 
-    function createClientProject(address payable _client, address payable _arbiter, address _paymentTokenAddress)
+    function createClientProject(address payable _client, address payable _arbiter)
     public
      {
-        Project project = new Project(
-                                payable(msg.sender),
-                                _client,
-                                _arbiter,
-                                address(repToken),
-                                address(arbitrationEscrow),
-                                address(voting),
-                                _paymentTokenAddress,
-                                votingDuration);
-        clientProjects.push(address(project));
-        _isProject[address(project)] = true;
+        address projectAddress = clientProjectFactory.createClientProject(
+            payable(msg.sender), 
+            _client,
+            _arbiter,
+            address(repToken),
+            address(arbitrationEscrow),
+            address(voting),
+            address(defaultPaymentToken),
+            votingDuration
+        );
+        clientProjects.push(projectAddress);
+        _isProject[address(projectAddress)] = true;
         numberOfProjects += 1;
     }
 
-    function createInternalProject(
-                uint256 _requestedAmount) 
+
+    function createInternalProject(uint256 _requestedAmount) 
     external
     {
-        InternalProject project = new InternalProject(
+        address projectAddress = internalProjectFactory.createInternalProject(
                                 payable(msg.sender),
                                 address(repToken),
                                 address(defaultPaymentToken),
                                 address(voting),
-                                paymentInterval,
                                 votingDuration,
+                                paymentInterval,
                                 _requestedAmount);
-        internalProjects.push(address(project));
-        _isProject[address(project)] = true;
+
+        internalProjects.push(address(projectAddress));
+        _isProject[address(projectAddress)] = true;
         numberOfProjects += 1;
     }
 
@@ -116,6 +133,9 @@ contract Source {  // maybe ERC1820
     }
 
     function setDefaultPaymentToken(address _erc20TokenAddress) public {
+        // TODO: ONLY REQUIRE DAO VOTE
+        require(false);
+
         defaultPaymentToken = IERC20(_erc20TokenAddress);
         if (_paymentTokenIndex[_erc20TokenAddress]>0){
             paymentTokens.push(_erc20TokenAddress);
@@ -133,6 +153,9 @@ contract Source {  // maybe ERC1820
         defaultPaymentToken.transfer(msg.sender, _amount);
     }
 
+    function liquidateInternalProject(address _project) external {
+        IInternalProject(_project).withdraw();
+    }
 
     function changePaymentInterval() external {
         // maybe later //DAO vote
@@ -142,8 +165,6 @@ contract Source {  // maybe ERC1820
     // function veto(){
 
     // }
-
-
 
     
 
@@ -162,9 +183,10 @@ contract Source {  // maybe ERC1820
     
     function payout() external {
         require(block.timestamp - startPaymentTimer > paymentInterval);
+        //TODO: Maybe just those internal projects that are still active
         for (uint256 i = 0; i<internalProjects.length; i++){
             // set amounts to zero again.
-            InternalProject(internalProjects[i]).pay();
+            IInternalProject(internalProjects[i]).pay();
         }
         startPaymentTimer = block.timestamp;
 
@@ -181,7 +203,7 @@ contract Source {  // maybe ERC1820
         if (false){
 
             uint256 roughGasAmountEstimate = 1000000;
-            payable(msg.sender).send(roughGasAmountEstimate * tx.gasprice);
+            payable(msg.sender).transfer(roughGasAmountEstimate * tx.gasprice);
         }
     }
 

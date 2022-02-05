@@ -46,9 +46,10 @@ contract InternalProject {
 
 
     /* ========== CONSTRUCTOR ========== */
+                
 
-
-    constructor(address payable _teamLead,
+    constructor(address _sourceAddress,
+                address payable _teamLead,
                 address repTokenAddress,
                 address paymentTokenAddress,
                 address _votingAddress,
@@ -62,7 +63,7 @@ contract InternalProject {
         teamLead = _teamLead;
         team.push(teamLead);
         _isTeamMember[teamLead] = true;
-        source = ISource(msg.sender);
+        source = ISource(_sourceAddress);
         repToken = IRepToken(repTokenAddress);
         paymentToken = IERC20(paymentTokenAddress);
         startingTime = block.timestamp;
@@ -157,8 +158,9 @@ contract InternalProject {
 
     function withdraw() external {
         require(msg.sender==address(source));
-        // if Project Manager misbehaves
+        // if Project Manager misbehaves or for other reasons
         // dOrg can withdraw at any time maybe.
+        paymentToken.transfer(address(source), paymentToken.balanceOf(address(this)));
     }
 
 }

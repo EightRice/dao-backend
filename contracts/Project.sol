@@ -13,7 +13,7 @@ import "./IVoting.sol";
 /// @author dOrg
 /// @dev Experimental status
 /// @custom:experimental This is an experimental contract.
-contract Project{
+contract ClientProject{
 
     /* ========== CONTRACT VARIABLES ========== */
 
@@ -101,7 +101,9 @@ contract Project{
 
     /* ========== CONSTRUCTOR ========== */
     
-    constructor(address payable _sourcingLead,
+
+    constructor(address _sourceAddress,
+                address payable _sourcingLead,
                 address payable _client,
                 address payable _arbiter,
                 address repTokenAddress,
@@ -117,7 +119,7 @@ contract Project{
         client=_client;
         arbitrationEscrow=ArbitrationEscrow(_arbitrationEscrow);
         arbiter=_arbiter;
-        source = ISource(msg.sender);
+        source = ISource(_sourceAddress);
         repToken = IRepToken(repTokenAddress);
         startingTime = block.timestamp;
         votingDuration = _votingDuration;
