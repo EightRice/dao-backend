@@ -1,0 +1,65 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "IClientProjectFactory",
+  "sourceName": "contracts/Factory/IClientProjectFactory.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address payable",
+          "name": "_souringLead",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_client",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_arbiter",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_repTokenAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_arbitrationEscrow",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_votingAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_paymentTokenAddress",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_votingDuration",
+          "type": "uint256"
+        }
+      ],
+      "name": "createClientProject",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
