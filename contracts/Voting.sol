@@ -1,0 +1,111 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.7;
+
+
+
+contract Voting {
+
+    enum Type {absoluteThreshold, permilleThreshold, deadline, deadlineAbsoluteThreshold, deadlinePermilleThreshold}
+    enum Status {inactive, active, passed, failed}
+
+    struct Info {
+        Type votingType;
+        Status votingStatus;
+        uint40 deadline;
+        uint120 threshold;
+        uint120 totalAmount;
+        address winner;
+    }
+
+    uint256 MILLE = 1000;
+    mapping(address=>mapping(uint256=>Info)) voteInfo;
+    mapping(address=>uint256) polls;
+    mapping(address=>mapping(uint256=>mapping(address=>uint256))) public votes;
+    mapping(address=>mapping(uint256=>mapping(address=>bool))) public alreadyVoted;
+
+    function start(uint8 _votingType, uint40 _deadline, uint120 _threshold, uint120 _totalAmount) external returns(uint256) {
+        polls[msg.sender] += 1;
+        voteInfo[msg.sender][polls[msg.sender]] = Info({
+            votingType: Type(_votingType),
+            votingStatus: Status.active,
+            deadline: _deadline,
+            threshold: _threshold,
+            totalAmount: _totalAmount,
+            winner: address(0x0)});
+        return polls[msg.sender];
+    }
+
+    function _vote(uint256 poll_id, address votedOn, uint256 amount) 
+    internal 
+    {
+        votes[msg.sender][poll_id][votedOn] += amount;
+    }
+
+    function vote(uint256 poll_id, address votedBy, address votedOn, uint256 amount)
+    public 
+    hasAlreadyVoted(poll_id, votedBy)
+    {
+        _vote(poll_id, votedOn, amount);
+        alreadyVoted[msg.sender][poll_id][votedBy] = true;
+    }
+
+    function safeVote(uint256 poll_id, address votedBy, address votedOn, uint128 amount) 
+    public 
+    hasAlreadyVoted(poll_id, votedBy)
+    withStatusHandling(poll_id, votedBy, votedOn)
+    {
+        _vote(poll_id, votedOn, amount);
+        alreadyVoted[msg.sender][poll_id][votedBy] = true;
+    }
+
+    function stop(uint256 poll_id) external {
+        voteInfo[msg.sender][poll_id].votingStatus = Status.failed;
+    }
+    // return voteInfo[msg.sender][poll_id].votingStatus;
+
+    function queryResult(uint256 poll_id, address votedOn) view external returns(uint256){
+        return uint256(votes[msg.sender][poll_id][votedOn]);
+    }
+
+    function _updateStatus(uint256 poll_id, address votedOn) internal {
+        uint256 _votedOn = votes[msg.sender][poll_id][votedOn];
+        Type _votingType = voteInfo[msg.sender][poll_id].votingType;
+        if (_votingType == Type.absoluteThreshold){
+            if (_votedOn >= uint256(voteInfo[msg.sender][poll_id].threshold)) {
+                voteInfo[msg.sender][poll_id].votingStatus = Status.passed;
+            }
+        } else if (_votingType == Type.permilleThreshold) {
+            if (_votedOn >= uint256(voteInfo[msg.sender][poll_id].threshold * voteInfo[msg.sender][poll_id].totalAmount)  / MILLE) {
+                voteInfo[msg.sender][poll_id].votingStatus = Status.passed;
+            }
+        } else if (_votingType == Type.deadline)  {
+            // checking majority needs to be handled by calling contract
+            if (block.timestamp >= uint256(voteInfo[msg.sender][poll_id].deadline)) {
+                voteInfo[msg.sender][poll_id].votingStatus = Status.passed;
+            }
+        } else if (_votingType == Type.deadlinePermilleThreshold){
+            if ((block.timestamp >= uint256(voteInfo[msg.sender][poll_id].deadline)) &&
+                (_votedOn >= uint256(voteInfo[msg.sender][poll_id].threshold * voteInfo[msg.sender][poll_id].totalAmount) / MILLE)) {
+                voteInfo[msg.sender][poll_id].votingStatus = Status.passed;
+            }
+        } else if (_votingType == Type.deadlineAbsoluteThreshold){
+            if ((block.timestamp >= uint256(voteInfo[msg.sender][poll_id].deadline)) &&
+                (_votedOn >= uint256(voteInfo[msg.sender][poll_id].threshold))) {
+                voteInfo[msg.sender][poll_id].votingStatus = Status.passed;
+            }
+        } else {
+
+        }
+    }
+
+    modifier hasAlreadyVoted(uint256 poll_id, address votedBy) {
+        require(!alreadyVoted[msg.sender][poll_id][votedBy], "Already voted!");
+        _;
+    }
+
+    modifier withStatusHandling(uint256 poll_id, address votedBy, address votedOn) {
+        require(voteInfo[msg.sender][poll_id].votingStatus==Status.active, "Voting not active!");
+        _;
+        _updateStatus(poll_id, votedOn);
+    }
+}

@@ -6,6 +6,7 @@ import "./IRepToken.sol";
 import "./Project.sol";
 import "./IProject.sol";
 import "./Arbitration.sol";
+import "./IVoting.sol";
 
 interface IArbitrationEscrow {}
 
@@ -18,6 +19,7 @@ contract Source {  // maybe ERC1820
 
     /* ========== CONTRACT VARIABLES ========== */
 
+    IVoting public voting;
     RepToken public repToken;
     ArbitrationEscrow public arbitrationEscrow;
 
@@ -29,13 +31,13 @@ contract Source {  // maybe ERC1820
 
     /* ========== EVENTS ========== */
 
-    event HumanCreated(address _human);
     event ProjectCreated(address _project);
 
     /* ========== CONSTRUCTOR ========== */
 
-    constructor (string memory name, string memory symbol){
-
+    constructor (address votingContract, string memory name, string memory symbol){
+        
+        voting = IVoting(votingContract);
         repToken = new RepToken(name, symbol);
         arbitrationEscrow = new ArbitrationEscrow();
 
@@ -52,7 +54,8 @@ contract Source {  // maybe ERC1820
                                 _client,
                                 _arbiter,
                                 address(repToken),
-                                arbitrationEscrow,
+                                address(arbitrationEscrow),
+                                address(voting),
                                 _paymentTokenAddress,
                                 _votingDuration);
         projects.push(address(project));

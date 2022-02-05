@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./IRepToken.sol";
 import "./Arbitration.sol";
 import "./IDAO.sol";
+import "./IVoting.sol";
 
 
 /// @title Main Project contract
@@ -20,7 +21,7 @@ contract Project{
     IRepToken public repToken;
     IERC20 public paymentToken;
     ArbitrationEscrow public arbitrationEscrow;
-
+    IVoting public voting;
 
     /* ========== ENUMS AND STRUCTS ========== */
 
@@ -99,7 +100,8 @@ contract Project{
                 address payable _client,
                 address payable _arbiter,
                 address repTokenAddress,
-                ArbitrationEscrow _arbitrationEscrow,   //TODO! Better use address!
+                address _arbitrationEscrow,   //TODO! Better use address!
+                address _votingAddress,
                 address _paymentTokenAddress,
                 uint256 _votingDuration){
          
@@ -108,12 +110,13 @@ contract Project{
         team.push(sourcingLead);
         _isTeamMember[sourcingLead] = true;
         client=_client;
-        arbitrationEscrow=_arbitrationEscrow;
+        arbitrationEscrow=ArbitrationEscrow(_arbitrationEscrow);
         arbiter=_arbiter;
         source = ISource(msg.sender);
         repToken = IRepToken(repTokenAddress);
         startingTime = block.timestamp;
         votingDuration = _votingDuration;
+        voting = IVoting(_votingAddress);
         // use default ratio between Rep and Payment
         _changePaymentMethod(_paymentTokenAddress, repWeiPerPaymentGwei);
         
