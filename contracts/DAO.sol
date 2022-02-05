@@ -34,6 +34,7 @@ contract Source {  // maybe ERC1820
     uint256 public numberOfProjects;
     mapping(address=>bool) _isProject;
 
+    uint256 public votingDuration = 4 days ; // 1 weeks;
     uint256 public paymentInterval;
 
     /* ========== EVENTS ========== */
@@ -49,14 +50,14 @@ contract Source {  // maybe ERC1820
         arbitrationEscrow = new ArbitrationEscrow();
 
         // either at construction or after set default paymentToken
-        PaymentTokens.push(address(0x0));
+        paymentTokens.push(address(0x0));
         setDefaultPaymentToken(paymentToken);
     }
     
     
     /* ========== PROJECT HANDLING ========== */
 
-    function createClientProject(address payable _client, address payable _arbiter, address _paymentTokenAddress, uint8 _votingDuration)
+    function createClientProject(address payable _client, address payable _arbiter, address _paymentTokenAddress)
     public
      {
         Project project = new Project(
@@ -67,15 +68,14 @@ contract Source {  // maybe ERC1820
                                 address(arbitrationEscrow),
                                 address(voting),
                                 _paymentTokenAddress,
-                                _votingDuration);
+                                votingDuration);
         clientProjects.push(address(project));
         _isProject[address(project)] = true;
         numberOfProjects += 1;
     }
 
     function createInternalProject(
-                address _paymentTokenAddress,
-                uint256 _votingDuration) 
+                uint256 _requestedAmount) 
     external
     {
         InternalProject project = new InternalProject(
@@ -84,7 +84,8 @@ contract Source {  // maybe ERC1820
                                 address(defaultPaymentToken),
                                 address(voting),
                                 paymentInterval,
-                                _votingDuration);
+                                votingDuration,
+                                _requestedAmount);
         internalProjects.push(address(project));
         _isProject[address(project)] = true;
         numberOfProjects += 1;
@@ -155,18 +156,18 @@ contract Source {  // maybe ERC1820
         // DAO LEVEL
     }
 
-    function getStartPaymentTimer() external returns(uint256) {
+    function getStartPaymentTimer() view external returns(uint256) {
         return startPaymentTimer;
     }
     
     
     function payout() external {
-        require(block.now - startPaymentTimer > paymentInterval);
+        require(block.timestamp - startPaymentTimer > paymentInterval);
         for (uint256 i = 0; i<internalProjects.length; i++){
             // set amounts to zero again.
             InternalProject(internalProjects[i]).pay();
         }
-        startPaymentTimer = block.now;
+        startPaymentTimer = block.timestamp;
 
         // maybe refund the caller with DAO cash
         _refundGas();

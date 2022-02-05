@@ -151,8 +151,8 @@ contract InternalProject {
         }
 
         // and set payee amounts to []
-        payees = [];
-        amounts = [];
+        delete payees;
+        delete amounts;
     }    
 
     function withdraw() external {
