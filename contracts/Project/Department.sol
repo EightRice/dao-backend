@@ -83,9 +83,9 @@ contract InternalProject {
         // PAYMENT OPTIONS ? (A,B  or C)
 
         // RepSplitting Options
-        _addRepSplittingOption(uint32(50), uint32(50));
-        _addRepSplittingOption(uint32(25), uint32(75));
-        _addRepSplittingOption(uint32(0), uint32(100));
+        _addRepSplittingOption(uint32(500), uint32(500));
+        _addRepSplittingOption(uint32(250), uint32(750));
+        _addRepSplittingOption(uint32(0), uint32(1000));
     }
 
     function _addRepSplittingOption(uint32 _rep, uint32 _pay) internal {
