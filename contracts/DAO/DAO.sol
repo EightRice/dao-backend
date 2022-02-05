@@ -8,8 +8,6 @@ import "../Project/IDepartment.sol";
 import "../Factory/IClientProjectFactory.sol";
 import "../Factory/IInternalProjectFactory.sol";
 
-interface IArbitrationEscrow {}
-
 
 
 /// @title Main DAO contract
