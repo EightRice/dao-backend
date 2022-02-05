@@ -35,6 +35,17 @@ contract InternalProject {
     uint256 public numberOfVotes;
     uint256 public paymentInterval;
 
+    address payable[] public payees;
+    uint256[] public amounts;
+
+
+    struct RepSplittingOption{
+        uint32 rep;
+        uint32 pay;
+    }
+
+    RepSplittingOption[] public repSplittingOptions;
+    mapping(address=>uint16) _preferredRepSplitting;
 
     address payable[] team;
     mapping(address=>bool) _isTeamMember;
@@ -70,6 +81,24 @@ contract InternalProject {
         voting = IVoting(_votingAddress);
         // use default ratio between Rep and Payment
         // PAYMENT OPTIONS ? (A,B  or C)
+
+        // RepSplitting Options
+        _addRepSplittingOption(uint32(50), uint32(50));
+        _addRepSplittingOption(uint32(25), uint32(75));
+        _addRepSplittingOption(uint32(0), uint32(100));
+    }
+
+    function _addRepSplittingOption(uint32 _rep, uint32 _pay) internal {
+        repSplittingOptions.push(RepSplittingOption({rep: _rep, pay: _pay}));
+    }
+
+    function addRepSplittingOption(uint32 _rep, uint32 _pay) external {
+        require(msg.sender==teamLead);
+        _addRepSplittingOption(_rep, _pay);
+    }
+
+    function _setRepSplittingOption(uint16 _optionIndex) external {
+        _preferredRepSplitting[msg.sender] = _optionIndex;
     }
 
 
@@ -104,6 +133,7 @@ contract InternalProject {
         _registerVote();
     }
 
+
     function _registerVote() internal {
         status = (votes_pro > votes_against) ? ProjectStatus.active : ProjectStatus.rejected ;
         if (status == ProjectStatus.active){
@@ -112,18 +142,7 @@ contract InternalProject {
     }
 
 
-    address payable[] public payees;
-    uint256[] public amounts;
-
-
-
-    enum repSplittingOption {A, B, C}
-    mapping(address => repSplittingOption) public payeeSplitting;
-
-    function setSplitting(uint8 _newOption) external {
-        // require()
-        payeeSplitting[msg.sender] = repSplittingOption(_newOption);
-    }
+    
 
 
     function submitPayrollRoster(address payable[] memory _payees, uint256[] memory _amounts) external {
@@ -146,7 +165,9 @@ contract InternalProject {
         require(msg.sender==address(source));
 
         for (uint256 i; i<payees.length; i++){
-            paymentToken.transfer(payees[i], amounts[i]);
+            RepSplittingOption memory repSplit = repSplittingOptions[_preferredRepSplitting[payees[i]]];
+            paymentToken.transfer(payees[i], (amounts[i] * repSplit.pay) / 1000);
+            repToken.transfer(payees[i], (amounts[i] * repSplit.rep) / 1000);
             funds -= amounts[i];
         }
 
