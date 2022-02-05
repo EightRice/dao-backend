@@ -7,6 +7,7 @@ import "./Project.sol";
 import "./IProject.sol";
 import "./Arbitration.sol";
 import "./IVoting.sol";
+import "./Department.sol";
 
 interface IArbitrationEscrow {}
 
@@ -25,9 +26,15 @@ contract Source {  // maybe ERC1820
 
     /* ========== LOCAL VARIABLES ========== */
 
-    address[] public projects;
+    address[] public paymentTokens;
+    IERC20 public defaultPaymentToken;
+    mapping(address => uint256) _paymentTokenIndex;
+    address[] public clientProjects;
+    address[] public internalProjects;
     uint256 public numberOfProjects;
     mapping(address=>bool) _isProject;
+
+    uint256 public paymentInterval;
 
     /* ========== EVENTS ========== */
 
@@ -35,18 +42,21 @@ contract Source {  // maybe ERC1820
 
     /* ========== CONSTRUCTOR ========== */
 
-    constructor (address votingContract, string memory name, string memory symbol){
+    constructor (address paymentToken, address votingContract, string memory name, string memory symbol){
         
         voting = IVoting(votingContract);
         repToken = new RepToken(name, symbol);
         arbitrationEscrow = new ArbitrationEscrow();
 
+        // either at construction or after set default paymentToken
+        PaymentTokens.push(address(0x0));
+        setDefaultPaymentToken(paymentToken);
     }
     
     
     /* ========== PROJECT HANDLING ========== */
 
-    function createProject(address payable _client, address payable _arbiter, address _paymentTokenAddress, uint8 _votingDuration)
+    function createClientProject(address payable _client, address payable _arbiter, address _paymentTokenAddress, uint8 _votingDuration)
     public
      {
         Project project = new Project(
@@ -58,10 +68,28 @@ contract Source {  // maybe ERC1820
                                 address(voting),
                                 _paymentTokenAddress,
                                 _votingDuration);
-        projects.push(address(project));
+        clientProjects.push(address(project));
         _isProject[address(project)] = true;
         numberOfProjects += 1;
     }
+
+    function createInternalProject(
+                address _paymentTokenAddress,
+                uint256 _votingDuration) 
+    external
+    {
+        InternalProject project = new InternalProject(
+                                payable(msg.sender),
+                                address(repToken),
+                                address(defaultPaymentToken),
+                                address(voting),
+                                paymentInterval,
+                                _votingDuration);
+        internalProjects.push(address(project));
+        _isProject[address(project)] = true;
+        numberOfProjects += 1;
+    }
+
 
 
     /* ========== GOVERNANCE ========== */
@@ -72,6 +100,90 @@ contract Source {  // maybe ERC1820
         repToken.mint(payee, amount);
     }
 
+    // change default payment token.
+    // add new payment tokens.
+    function removePaymentToken(address _erc20TokenAddress) external {
+        // TODO: not everyone should be able to call this.
+        paymentTokens[_paymentTokenIndex[_erc20TokenAddress]] = address(0x0);
+        _paymentTokenIndex[_erc20TokenAddress] = 0;
+    }
+
+    function addPaymentToken(address _erc20TokenAddress) external {
+        require(_paymentTokenIndex[_erc20TokenAddress]==0, "doesnt exist yet");
+        paymentTokens.push(_erc20TokenAddress);
+        _paymentTokenIndex[_erc20TokenAddress] = paymentTokens.length - 1;
+    }
+
+    function setDefaultPaymentToken(address _erc20TokenAddress) public {
+        defaultPaymentToken = IERC20(_erc20TokenAddress);
+        if (_paymentTokenIndex[_erc20TokenAddress]>0){
+            paymentTokens.push(_erc20TokenAddress);
+        }
+
+        // make sure no funds are locked in the departments!
+        // TODO!!! Change default at each project.
+    }
+
+
+
+
+    function transfer(uint256 _amount) external {
+        require(_isProject[msg.sender]);
+        defaultPaymentToken.transfer(msg.sender, _amount);
+    }
+
+
+    function changePaymentInterval() external {
+        // maybe later //DAO vote
+    }
+
+
+    // function veto(){
+
+    // }
+
+
+
+
+    
+
+
+    uint256 public startPaymentTimer;
+    // TODO: SET INITIAL PAYMENT TIMER!!!
+
+    function setStartPaymentTimer() external {
+        // DAO LEVEL
+    }
+
+    function getStartPaymentTimer() external returns(uint256) {
+        return startPaymentTimer;
+    }
+    
+    
+    function payout() external {
+        require(block.now - startPaymentTimer > paymentInterval);
+        for (uint256 i = 0; i<internalProjects.length; i++){
+            // set amounts to zero again.
+            InternalProject(internalProjects[i]).pay();
+        }
+        startPaymentTimer = block.now;
+
+        // maybe refund the caller with DAO cash
+        _refundGas();
+
+        // Maybe earn some DORG.
+        
+    }
+
+    function _refundGas() internal {
+        // require(False)
+        // TODO: DOUBLE CHECK THIS REFUND
+        if (false){
+
+            uint256 roughGasAmountEstimate = 1000000;
+            payable(msg.sender).send(roughGasAmountEstimate * tx.gasprice);
+        }
+    }
 
     /* ========== MIGRATION ========== */
 

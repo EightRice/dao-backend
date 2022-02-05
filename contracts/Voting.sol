@@ -58,12 +58,32 @@ contract Voting {
         alreadyVoted[msg.sender][poll_id][votedBy] = true;
     }
 
+    function safeVoteReturnStatus(uint256 poll_id, address votedBy, address votedOn, uint128 amount)
+    external
+    returns(uint8)
+    {
+        safeVote(poll_id, votedBy, votedOn, amount);
+        return uint8(voteInfo[msg.sender][poll_id].votingStatus);
+    }
+
     function stop(uint256 poll_id) external {
         voteInfo[msg.sender][poll_id].votingStatus = Status.failed;
     }
-    // return voteInfo[msg.sender][poll_id].votingStatus;
 
-    function queryResult(uint256 poll_id, address votedOn) view external returns(uint256){
+    function getStatus(uint256 poll_id) view external returns(uint8){
+       return uint8(voteInfo[msg.sender][poll_id].votingStatus); 
+    }
+
+    function getWinner(uint256 poll_id) view external returns(address){
+       return voteInfo[msg.sender][poll_id].winner; 
+    }
+
+    function getStatusAndWinner(uint256 poll_id) view external returns(uint8, address){
+        return (uint8(voteInfo[msg.sender][poll_id].votingStatus),
+                voteInfo[msg.sender][poll_id].winner);
+    }
+
+    function queryVotes(uint256 poll_id, address votedOn) view external returns(uint256){
         return uint256(votes[msg.sender][poll_id][votedOn]);
     }
 

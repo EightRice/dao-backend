@@ -32,6 +32,7 @@ contract Project{
         uint16 numberOfApprovals;         
     }
 
+
     struct Milestone {
         bool approved;
         bool inDispute;
@@ -42,20 +43,26 @@ contract Project{
         uint256[] payments;
     }
 
+    struct CurrentVoteId {
+        uint256 onProject;
+        uint256 onSourcingLead;
+        uint256 onTeam;
+    }
+
     /* ========== VOTING VARIABLES ========== */
 
     ProjectStatus public status;
+    CurrentVoteId public currentVoteId;
     uint256 public votes_pro;
     uint256 public votes_against;
-    uint256 public numberOfVotes;
     uint256 public votingDuration;  // in seconds (1 day = 86400)
     uint256 public vetoDurationForPayments = 4 * 86400 ;// in seconds
     uint256 public startingTime;
     uint256 public approvalAmount;
     
     // TODO: Discuss in dOrg
-    uint256 public defaultThreshold = 50;  // in percent
-    uint256 public exclusionThreshold = 50;  // in percent  
+    uint256 public defaultThreshold = 500;  // in permille
+    uint256 public exclusionThreshold = 500;  // in permille
 
     mapping(address=>bool) _isTeamMember;
     mapping(address=>mapping(address=>bool)) public excludeMember;
@@ -79,8 +86,6 @@ contract Project{
     // You earn one WETH, then how many reptokens you get?
     // (10**18) * (repToPaymentRatio) / (10 ** 9)
     // where the repToPaymentRatio = 3000 * 10 ** 9
-
-    mapping(address=>paymentProposal) public payments;
 
 
     /* ========== MILESTONES ========== */
@@ -136,7 +141,6 @@ contract Project{
         } else {
             votes_against += vote;  // add safeMath
         }
-        numberOfVotes += 1;
         return true;
     }
 
@@ -200,26 +204,23 @@ contract Project{
         }
     }
     
+    function startSourcingLeadVote() external {
+        // TODO: Save conversion to uint120!
+        currentVoteId.onSourcingLead = voting.start(1, 0, uint120(defaultThreshold), uint120(team.length));
+    }
+
     function replaceSourcingLead(address _nominee) external {
-        require(_nominee!=sourcingLead);  // Maybe allow also sourcingLead to 
-        require(!alreadyVotedForNewSourcingLead[msg.sender][_nominee]);
-        votesForNewSourcingLead[msg.sender][_nominee] += 1;
-        alreadyVotedForNewSourcingLead[msg.sender][_nominee] = true;
+        require(_nominee!=sourcingLead);  // Maybe allow also sourcingLead to         
+        voting.safeVote(currentVoteId.onSourcingLead, msg.sender, _nominee, 1);
+        voting.getStatus(currentVoteId.onSourcingLead); // you cant hear me probably.
     }
 
     function claimSourcingLead() external {
-        uint256 totalVotes = 0;
-        for (uint256 i=0; i<team.length; i++){
-            totalVotes += votesForNewSourcingLead[team[i]][msg.sender];
-        }
-        if (totalVotes > (team.length * defaultThreshold ) / 100) {
-            sourcingLead = payable(msg.sender);
-            // reset all the votes
-            for (uint256 i; i<team.length; i++){
-                votesForNewSourcingLead[team[i]][msg.sender] = 0;
-                alreadyVotedForNewSourcingLead[team[i]][msg.sender] = false;
-            }
-        }
+        (uint8 votingStatus, address winner) = voting.getStatusAndWinner(currentVoteId.onSourcingLead);
+        require(votingStatus==2, "Voting has not passed");
+        require(winner == msg.sender, "Only elected Project Manager can claim!");
+        sourcingLead = payable(msg.sender);
+        // reset all the votes maybe.
     }
         
 
