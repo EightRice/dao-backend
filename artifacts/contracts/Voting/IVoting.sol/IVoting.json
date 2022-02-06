@@ -11,6 +11,25 @@
           "type": "uint256"
         }
       ],
+      "name": "getElected",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "poll_id",
+          "type": "uint256"
+        }
+      ],
       "name": "getStatus",
       "outputs": [
         {
@@ -30,32 +49,13 @@
           "type": "uint256"
         }
       ],
-      "name": "getStatusAndWinner",
+      "name": "getStatusAndElected",
       "outputs": [
         {
           "internalType": "uint8",
           "name": "",
           "type": "uint8"
         },
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "poll_id",
-          "type": "uint256"
-        }
-      ],
-      "name": "getWinner",
-      "outputs": [
         {
           "internalType": "address",
           "name": "",

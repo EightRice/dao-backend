@@ -14,7 +14,7 @@ contract Voting {
         uint40 deadline;
         uint120 threshold;
         uint120 totalAmount;
-        address winner;
+        address elected;
     }
 
     uint256 MILLE = 1000;
@@ -31,7 +31,7 @@ contract Voting {
             deadline: _deadline,
             threshold: _threshold,
             totalAmount: _totalAmount,
-            winner: address(0x0)});
+            elected: address(0x0)});
         return polls[msg.sender];
     }
 
@@ -74,13 +74,13 @@ contract Voting {
        return uint8(voteInfo[msg.sender][poll_id].votingStatus); 
     }
 
-    function getWinner(uint256 poll_id) view external returns(address){
-       return voteInfo[msg.sender][poll_id].winner; 
+    function getElected(uint256 poll_id) view external returns(address){
+       return voteInfo[msg.sender][poll_id].elected; 
     }
 
-    function getStatusAndWinner(uint256 poll_id) view external returns(uint8, address){
+    function getStatusAndElected(uint256 poll_id) view external returns(uint8, address){
         return (uint8(voteInfo[msg.sender][poll_id].votingStatus),
-                voteInfo[msg.sender][poll_id].winner);
+                voteInfo[msg.sender][poll_id].elected);
     }
 
     function queryVotes(uint256 poll_id, address votedOn) view external returns(uint256){

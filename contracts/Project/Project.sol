@@ -218,9 +218,9 @@ contract ClientProject{
     }
 
     function claimSourcingLead() external {
-        (uint8 votingStatus, address winner) = voting.getStatusAndWinner(currentVoteId.onSourcingLead);
+        (uint8 votingStatus, address elected) = voting.getStatusAndElected(currentVoteId.onSourcingLead);
         require(votingStatus==2, "Voting has not passed");
-        require(winner == msg.sender, "Only elected Project Manager can claim!");
+        require(elected == msg.sender, "Only elected Project Manager can claim!");
         sourcingLead = payable(msg.sender);
         // reset all the votes maybe.
     }

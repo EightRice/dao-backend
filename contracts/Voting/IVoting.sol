@@ -7,7 +7,7 @@ interface IVoting {
     function safeVote(uint256 poll_id, address votedBy, address votedOn, uint128 amount) external;
     function safeVoteReturnStatus(uint256 poll_id, address votedBy, address votedOn, uint128 amount) external returns(uint8);
     function getStatus(uint256 poll_id) external returns(uint8);
-    function getWinner(uint256 poll_id) view external returns(address);
-    function getStatusAndWinner(uint256 poll_id) view external returns(uint8, address);
+    function getElected(uint256 poll_id) view external returns(address);
+    function getStatusAndElected(uint256 poll_id) view external returns(uint8, address);
     function stop(uint256 poll_id) external;
 }

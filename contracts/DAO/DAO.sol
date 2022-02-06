@@ -152,58 +152,62 @@ contract Source {  // maybe ERC1820
         _paymentTokenIndex[_erc20TokenAddress] = 0;
     }
 
-    function addPaymentToken(address _erc20TokenAddress) external {
+    function addPaymentToken(address _erc20TokenAddress) external requiredRep() {
         require(_paymentTokenIndex[_erc20TokenAddress] == 0, "doesnt exist yet");
         paymentTokens.push(_erc20TokenAddress);
         _paymentTokenIndex[_erc20TokenAddress] = paymentTokens.length - 1;
     }
 
     
-
-    
-    function setDefaultPaymentToken(address _erc20TokenAddress) public voteOnMotion(0, _erc20TokenAddress) {
-        // DAO VOTE
-        defaultPaymentToken = IERC20(_erc20TokenAddress);
-            if (_paymentTokenIndex[_erc20TokenAddress]>0){
-                paymentTokens.push(_erc20TokenAddress);
-            }
+    function setDefaultPaymentToken(address _erc20TokenAddress)
+    public 
+    isEligibleToken(_erc20TokenAddress)
+    voteOnMotion(0, _erc20TokenAddress) {
+        // DAO Vote: The MotionId is 0
+        address newPaymentTokenAddress = voting.getElected(currentPoll[0].index);
+        defaultPaymentToken = IERC20(newPaymentTokenAddress);
     }
 
-    // make sure no funds are locked in the departments!
-    // TODO!!! Change default at each project.
-
-    function transfer(uint256 _amount) external {
-        require(_isProject[msg.sender]);
+    function transfer(uint256 _amount) external onlyProject() {
         defaultPaymentToken.transfer(msg.sender, _amount);
     }
 
-    function liquidateInternalProject(address _project) external {
-        // only DAO may do this.
-
+    function liquidateInternalProject(address _project)
+    external 
+    voteOnMotion(4, _project){
+        // DAO Vote: The MotionId is 4
         IInternalProject(_project).withdraw();
     }
 
-    function changePaymentInterval() external {
-        // maybe later //DAO vote
+    function changePaymentInterval(uint160 duration)
+    external
+    voteOnMotion(2, address(duration)){        
+        // DAO Vote: The MotionId is 2
+        address unconvertedDuration = voting.getElected(currentPoll[0].index);
+        paymentInterval = uint256(uint160(unconvertedDuration));
     }
 
-
-    // function veto(){
-
-    // }
-
-    
-
-
-
-    function resetPaymentTimer() external {
-        // DAO LEVEL
+    function resetPaymentTimer() 
+    external 
+    voteOnMotion(3, address(0x0)){        
+        // DAO Vote: The MotionId is 3
+        startPaymentTimer = block.timestamp;
+        // drawback that timer restarts when the majority is reached.
+        // which is a little bit unpredictable.
+        // But it will start before the end of defaultVotingDuration
     }
 
     function getStartPaymentTimer() view external returns(uint256) {
         return startPaymentTimer;
     }
     
+
+
+    // make sure no funds are locked in the departments!
+    // TODO!!! Change default at each project.
+    
+
+
     
     function payout() external {
         require(block.timestamp - startPaymentTimer > paymentInterval);
@@ -232,6 +236,20 @@ contract Source {  // maybe ERC1820
         }
     }
 
+    modifier requiredRep() {
+        require(repToken.balanceOf(msg.sender)>0);
+        _;
+    }
+
+    modifier onlyProject() {
+        require(_isProject[msg.sender]);
+        _;
+    }
+
+    modifier isEligibleToken(address _tokenAddres){
+        require(_paymentTokenIndex[_tokenAddres]>0);
+        _;
+    }
 
     modifier voteOnMotion(uint8 _motion, address _address) {
         // Motion motion = Motion.setDefaultPaymentToken;
