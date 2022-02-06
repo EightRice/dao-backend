@@ -2,6 +2,10 @@
 pragma solidity ^0.8.7;
 
 
+// NOTE: We should orient ourselves along the lines of the dOrg Governance model
+// eg. multisig by top7 rep holders
+// implement relative majority voting
+// implement delegation
 
 contract Voting {
 
