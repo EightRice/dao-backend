@@ -6,4 +6,7 @@ interface IdOrgFactory {
     function createDORG(address votingAddress, address tokenAddress, bool setAsNewMaster) 
     external
     returns(address);
+
+    function getMasterDorg() external view returns(address);
 }
+

@@ -23,4 +23,8 @@ contract dOrgFactory{
         }
     }
 
+    function getMasterDorg() external view returns(address){
+        return masterDORG;
+    }
+
 }

@@ -18,11 +18,15 @@ import "../Factory/IdOrgFactory.sol";
 /// @custom:experimental This is an experimental contract.
 contract Source {  // maybe ERC1820
     
+    bool public deprecated;
+
     enum Motion {setDefaultPaymentToken,
                  removePaymentToken,
                  changePaymentInterval,
                  resetPaymentTimer,
-                 liquidateInternalProject}
+                 liquidateInternalProject,
+                 migrateDORG,
+                 migrateRepToken}
     
     struct Poll {
         uint256 index;
@@ -33,9 +37,11 @@ contract Source {  // maybe ERC1820
 
     IVoting public voting;
     IRepToken public repToken;
+    IRepToken public oldRepToken;
     ArbitrationEscrow public arbitrationEscrow;
     IClientProjectFactory public clientProjectFactory;
     IInternalProjectFactory public internalProjectFactory;
+    IdOrgFactory public dOrgFactory;
 
     /* ========== LOCAL VARIABLES ========== */
     
@@ -65,6 +71,7 @@ contract Source {  // maybe ERC1820
     /* ========== CONSTRUCTOR ========== */
     constructor (address votingContract, address repTokenAddress){
         
+        dOrgFactory = IdOrgFactory(msg.sender);
         voting = IVoting(votingContract);
         repToken = IRepToken(repTokenAddress);
         arbitrationEscrow = new ArbitrationEscrow();
@@ -102,6 +109,7 @@ contract Source {  // maybe ERC1820
     function createClientProject(address payable _client, address payable _arbiter)
     public
      {
+        require(!deprecated);
         address projectAddress = clientProjectFactory.createClientProject(
             payable(msg.sender), 
             _client,
@@ -121,6 +129,7 @@ contract Source {  // maybe ERC1820
     function createInternalProject(uint256 _requestedAmount) 
     external
     {
+        require(!deprecated);
         address projectAddress = internalProjectFactory.createInternalProject(
                                 payable(msg.sender),
                                 address(repToken),
@@ -285,5 +294,32 @@ contract Source {  // maybe ERC1820
     }
 
     /* ========== MIGRATION ========== */
+
+    function migrateDORG()
+    external 
+    voteOnMotion(5, address(0x0)){ 
+        // TODO! MUST BE a lot higher CONDITONS and THRESHOLD!!!
+        dOrgFactory.createDORG(address(voting), address(repToken), true);
+        deprecated = true;  // cant start new projects
+        _refundGas();
+    }
+
+    function migrateRepToken(address _newRepToken)
+    external
+    voteOnMotion(6, address(_newRepToken)){ 
+        // TODO! MUST BE a lot higher CONDITONS and THRESHOLD!!!
+        // TODO: Check whethe I need to call this via RepToken(address(repToken))
+        oldRepToken = repToken;
+        repToken = IRepToken(voting.getElected(currentPoll[6].index));
+    }
+
+
+    function claimOldRep() external {
+        uint256 oldBalance = oldRepToken.balanceOf(msg.sender);
+        require(oldBalance>0);
+        // transfer and burn
+        repToken.mint(msg.sender, oldBalance);
+        oldRepToken.burn(msg.sender, oldBalance);
+    }
 
 }
