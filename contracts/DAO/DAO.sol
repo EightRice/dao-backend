@@ -153,7 +153,7 @@ contract Source {  // maybe ERC1820
     }
 
     function addPaymentToken(address _erc20TokenAddress) external requiredRep() {
-        require(_paymentTokenIndex[_erc20TokenAddress] == 0, "doesnt exist yet");
+        require(_paymentTokenIndex[_erc20TokenAddress] == 0, "already exists");
         paymentTokens.push(_erc20TokenAddress);
         _paymentTokenIndex[_erc20TokenAddress] = paymentTokens.length - 1;
     }
