@@ -24,4 +24,7 @@ interface IRepToken {
      */
     function totalSupply() external view returns (uint256);
 
+
+    function burn(address holder, uint256 amount) external;
+
 }

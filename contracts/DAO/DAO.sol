@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import "../Token/RepToken.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "../Token/IRepToken.sol";
 import "../Arbitration/Arbitration.sol";
 import "../Voting/IVoting.sol";
 import "../Project/IDepartment.sol";
 import "../Factory/IClientProjectFactory.sol";
 import "../Factory/IInternalProjectFactory.sol";
+import "../Factory/IdOrgFactory.sol";
 
 
 
@@ -30,7 +32,7 @@ contract Source {  // maybe ERC1820
     /* ========== CONTRACT VARIABLES ========== */
 
     IVoting public voting;
-    RepToken public repToken;
+    IRepToken public repToken;
     ArbitrationEscrow public arbitrationEscrow;
     IClientProjectFactory public clientProjectFactory;
     IInternalProjectFactory public internalProjectFactory;
@@ -61,11 +63,10 @@ contract Source {  // maybe ERC1820
     event ProjectCreated(address _project);
 
     /* ========== CONSTRUCTOR ========== */
-
-    constructor (address votingContract, string memory name, string memory symbol){
+    constructor (address votingContract, address repTokenAddress){
         
         voting = IVoting(votingContract);
-        repToken = new RepToken(name, symbol);
+        repToken = IRepToken(repTokenAddress);
         arbitrationEscrow = new ArbitrationEscrow();
 
         // either at construction or after set default paymentToken
