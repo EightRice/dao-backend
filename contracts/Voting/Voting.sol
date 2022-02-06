@@ -104,13 +104,22 @@ contract Voting {
                 voteInfo[msg.sender][poll_id].votingStatus = Status.passed;
             }
         } else if (_votingType == Type.deadlinePermilleThreshold){
-            if ((block.timestamp >= uint256(voteInfo[msg.sender][poll_id].deadline)) &&
-                (_votedOn >= uint256(voteInfo[msg.sender][poll_id].threshold * voteInfo[msg.sender][poll_id].totalAmount) / MILLE)) {
+            bool afterDeadline = block.timestamp > uint256(voteInfo[msg.sender][poll_id].deadline);
+            bool belowThreshold = (_votedOn < uint256(voteInfo[msg.sender][poll_id].threshold * voteInfo[msg.sender][poll_id].totalAmount) / MILLE);
+            if ( afterDeadline && belowThreshold){
+                voteInfo[msg.sender][poll_id].votingStatus = Status.failed;
+            }
+            if (!afterDeadline && !belowThreshold){
                 voteInfo[msg.sender][poll_id].votingStatus = Status.passed;
             }
+              
         } else if (_votingType == Type.deadlineAbsoluteThreshold){
-            if ((block.timestamp >= uint256(voteInfo[msg.sender][poll_id].deadline)) &&
-                (_votedOn >= uint256(voteInfo[msg.sender][poll_id].threshold))) {
+            bool afterDeadline = block.timestamp > uint256(voteInfo[msg.sender][poll_id].deadline);
+            bool belowThreshold = _votedOn < uint256(voteInfo[msg.sender][poll_id].threshold);
+            if ( afterDeadline && belowThreshold){
+                voteInfo[msg.sender][poll_id].votingStatus = Status.failed;
+            }
+            if (!afterDeadline && !belowThreshold){
                 voteInfo[msg.sender][poll_id].votingStatus = Status.passed;
             }
         } else {

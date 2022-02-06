@@ -87,8 +87,8 @@ contract InternalProject {
 
         // RepSplitting Options
         _addRepSplittingOption(uint32(500), uint32(500));
-        _addRepSplittingOption(uint32(250), uint32(750));
-        _addRepSplittingOption(uint32(0), uint32(1000));
+        // _addRepSplittingOption(uint32(250), uint32(750));
+        // _addRepSplittingOption(uint32(0), uint32(1000));
     }
 
     function _addRepSplittingOption(uint32 _rep, uint32 _pay) internal {
@@ -201,6 +201,7 @@ contract InternalProject {
         // dOrg can withdraw at any time maybe.
         paymentToken.transfer(address(source), paymentToken.balanceOf(address(this)));
     }
+
 
     function freeze() external {
         // lock contract functions until further action.

@@ -15,7 +15,17 @@ import "../Factory/IInternalProjectFactory.sol";
 /// @dev Experimental status
 /// @custom:experimental This is an experimental contract.
 contract Source {  // maybe ERC1820
-
+    
+    enum Motion {setDefaultPaymentToken,
+                 removePaymentToken,
+                 changePaymentInterval,
+                 resetPaymentTimer,
+                 liquidateInternalProject}
+    
+    struct Poll {
+        uint256 index;
+        uint8 status;
+    }
 
     /* ========== CONTRACT VARIABLES ========== */
 
@@ -26,6 +36,12 @@ contract Source {  // maybe ERC1820
     IInternalProjectFactory public internalProjectFactory;
 
     /* ========== LOCAL VARIABLES ========== */
+    
+    // maps Motion to Poll
+    mapping(uint8 => Poll) public currentPoll;
+
+    uint256 public startPaymentTimer;
+    // TODO: SET INITIAL PAYMENT TIMER!!!
 
     address[] public paymentTokens;
     IERC20 public defaultPaymentToken;
@@ -35,8 +51,10 @@ contract Source {  // maybe ERC1820
     uint256 public numberOfProjects;
     mapping(address=>bool) _isProject;
 
-    uint256 public votingDuration = 4 days ; // 1 weeks;
+    uint256 public initialVotingDuration = 7 days; // 1 weeks;
     uint256 public paymentInterval;
+    uint120 public defaultPermilleThreshold = 500;  // 50 percent
+    uint40 public defaultVotingDuration = uint40(10 days);
 
     /* ========== EVENTS ========== */
 
@@ -55,6 +73,8 @@ contract Source {  // maybe ERC1820
 
         // actually set this with DAO vote
         // setDefaultPaymentToken(paymentToken);
+
+        startPaymentTimer = block.timestamp;
     }
 
 
@@ -89,7 +109,7 @@ contract Source {  // maybe ERC1820
             address(arbitrationEscrow),
             address(voting),
             address(defaultPaymentToken),
-            votingDuration
+            initialVotingDuration
         );
         clientProjects.push(projectAddress);
         _isProject[address(projectAddress)] = true;
@@ -105,7 +125,7 @@ contract Source {  // maybe ERC1820
                                 address(repToken),
                                 address(defaultPaymentToken),
                                 address(voting),
-                                votingDuration,
+                                initialVotingDuration,
                                 paymentInterval,
                                 _requestedAmount);
 
@@ -133,26 +153,24 @@ contract Source {  // maybe ERC1820
     }
 
     function addPaymentToken(address _erc20TokenAddress) external {
-        require(_paymentTokenIndex[_erc20TokenAddress]==0, "doesnt exist yet");
+        require(_paymentTokenIndex[_erc20TokenAddress] == 0, "doesnt exist yet");
         paymentTokens.push(_erc20TokenAddress);
         _paymentTokenIndex[_erc20TokenAddress] = paymentTokens.length - 1;
     }
 
-    function setDefaultPaymentToken(address _erc20TokenAddress) public {
-        // TODO: ONLY REQUIRE DAO VOTE
-        require(false);
+    
 
+    
+    function setDefaultPaymentToken(address _erc20TokenAddress) public voteOnMotion(0, _erc20TokenAddress) {
+        // DAO VOTE
         defaultPaymentToken = IERC20(_erc20TokenAddress);
-        if (_paymentTokenIndex[_erc20TokenAddress]>0){
-            paymentTokens.push(_erc20TokenAddress);
-        }
-
-        // make sure no funds are locked in the departments!
-        // TODO!!! Change default at each project.
+            if (_paymentTokenIndex[_erc20TokenAddress]>0){
+                paymentTokens.push(_erc20TokenAddress);
+            }
     }
 
-
-
+    // make sure no funds are locked in the departments!
+    // TODO!!! Change default at each project.
 
     function transfer(uint256 _amount) external {
         require(_isProject[msg.sender]);
@@ -160,6 +178,8 @@ contract Source {  // maybe ERC1820
     }
 
     function liquidateInternalProject(address _project) external {
+        // only DAO may do this.
+
         IInternalProject(_project).withdraw();
     }
 
@@ -175,10 +195,8 @@ contract Source {  // maybe ERC1820
     
 
 
-    uint256 public startPaymentTimer;
-    // TODO: SET INITIAL PAYMENT TIMER!!!
 
-    function setStartPaymentTimer() external {
+    function resetPaymentTimer() external {
         // DAO LEVEL
     }
 
@@ -194,6 +212,7 @@ contract Source {  // maybe ERC1820
             // set amounts to zero again.
             IInternalProject(internalProjects[i]).pay();
         }
+        // TODO!! Start this in constructor
         startPaymentTimer = block.timestamp;
 
         // maybe refund the caller with DAO cash
@@ -210,6 +229,35 @@ contract Source {  // maybe ERC1820
 
             uint256 roughGasAmountEstimate = 1000000;
             payable(msg.sender).transfer(roughGasAmountEstimate * tx.gasprice);
+        }
+    }
+
+
+    modifier voteOnMotion(uint8 _motion, address _address) {
+        // Motion motion = Motion.setDefaultPaymentToken;
+        // Motion is 0
+        require(currentPoll[_motion].status <= 1, "inactive or active");
+        if (currentPoll[_motion].status == 0){
+            // TODO!! If one changes the enum in Voting to include other statuses then
+            // one should maybe not use the exclusion here.
+            currentPoll[_motion].index = voting.start(4, defaultVotingDuration, defaultPermilleThreshold, uint120(repToken.totalSupply()));
+            currentPoll[_motion].status = 1;
+        }
+
+        currentPoll[0].status = voting.safeVoteReturnStatus(
+            currentPoll[0].index,
+            msg.sender,
+            _address,
+            uint128(repToken.balanceOf(msg.sender)));
+
+        if (currentPoll[0].status == 2){
+            _;
+            // reset status to inactive, so that polls can take place again.
+            currentPoll[0].status == 0;
+        }
+        if (currentPoll[0].status == 3){
+            // reset status to inactive, so that polls can take place again.
+            currentPoll[0].status == 0;
         }
     }
 
