@@ -18,8 +18,16 @@ contract RepToken is ERC20 {
         _mint(msg.sender, amount);
     }
 
-    function mint(address holder, uint256 amount) external {
-        require(msg.sender==source);
+    function mint(address holder, uint256 amount) external onlyDAO() {
         _mint(holder, amount);
     } 
+
+    function burn(address holder, uint256 amount) external onlyDAO() {
+        _burn(holder, amount);
+    }
+
+    modifier onlyDAO() {
+        require(msg.sender==source);
+        _;
+    }
 }

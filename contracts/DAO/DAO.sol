@@ -58,7 +58,15 @@ contract Source {  // maybe ERC1820
     }
 
 
+    function burnRep() external {
+        require(_isProject[msg.sender]);
+        repToken.burn(msg.sender, repToken.balanceOf(msg.sender));
+    }
 
+    function mintRep(uint256 _amount) external {
+        require(_isProject[msg.sender]);
+        repToken.mint(msg.sender, _amount);
+    }
 
     function setDeploymentFactories(address _clientProjectFactory, address _internalProjectFactory) external {
         require(false, " requires DAO VOTE. To be implemented");

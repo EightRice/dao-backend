@@ -37,6 +37,7 @@ contract InternalProject {
 
     address payable[] public payees;
     uint256[] public amounts;
+    uint256[] public repAmounts;
 
 
     struct RepSplittingOption{
@@ -45,13 +46,15 @@ contract InternalProject {
     }
 
     RepSplittingOption[] public repSplittingOptions;
-    mapping(address=>uint16) _preferredRepSplitting;
+    mapping(address=>uint16) public _preferredRepSplitting;
 
     address payable[] team;
     mapping(address=>bool) _isTeamMember;
     uint256 public funds;
     address payable public teamLead;
 
+    uint256 MILLE = 1000;
+    
     event PayrollRosterSubmitted();
 
 
@@ -94,6 +97,7 @@ contract InternalProject {
 
     function addRepSplittingOption(uint32 _rep, uint32 _pay) external {
         require(msg.sender==teamLead);
+        require(_rep + _pay == MILLE, "overpay alert");
         _addRepSplittingOption(_rep, _pay);
     }
 
@@ -142,18 +146,28 @@ contract InternalProject {
     }
 
 
-    
-
-
-    function submitPayrollRoster(address payable[] memory _payees, uint256[] memory _amounts) external {
+    function submitPayrollRoster(address payable[] memory _payees, uint256[] memory _amounts, uint256[] memory _repAmounts) external {
         require(msg.sender==teamLead && _payees.length == _amounts.length);
+        // TODO: do we need the _payees.length == _amounts.length requirements.
+        // Will the contract function call revert if _amounts[i] doesnt exist?
+        // If not, then we need to add another row with _repAmount length. 
         require(block.timestamp - source.getStartPaymentTimer() < (paymentInterval * 3) / 4);
-        uint256 totalPaymentValue=0;
-        for (uint256 i;i<_payees.length; i++){totalPaymentValue+=_amounts[i];} 
-        require(totalPaymentValue<funds, "Not enough funds in contract");
+        uint256 totalPaymentValue = 0;
+        uint256 totalRepValue = 0;
+        for (uint256 i; i<_payees.length; i++){
+            // TODO: Maybe one could check whether repSplitting is in accordance with preferences.
+            totalPaymentValue += _amounts[i];
+            totalRepValue += _repAmounts[i];
+        } 
+        require(totalPaymentValue <= funds, "Not enough funds in contract");
+        // mint rep to contract
+        source.mintRep(totalRepValue);
+        // TODO: If there is surplus Rep in the contract (because the Payroll Roster was vetoed or for some other reason)
+        // then there could be /should be a way to burn the rest.
         // require(_isProject[msg.sender]);
         payees = _payees;
         amounts = _amounts;
+        repAmounts = _repAmounts;
 
         // check whether requested and then approved amount is not exceeded
 
@@ -165,22 +179,35 @@ contract InternalProject {
         require(msg.sender==address(source));
 
         for (uint256 i; i<payees.length; i++){
-            RepSplittingOption memory repSplit = repSplittingOptions[_preferredRepSplitting[payees[i]]];
-            paymentToken.transfer(payees[i], (amounts[i] * repSplit.pay) / 1000);
-            repToken.transfer(payees[i], (amounts[i] * repSplit.rep) / 1000);
+            // RepSplittingOption memory repSplit = repSplittingOptions[_preferredRepSplitting[payees[i]]];
+            paymentToken.transfer(payees[i], amounts[i]);
+            repToken.transfer(payees[i], repAmounts[i]);
+            // cant go negative, because otherwise transfer would have reverted!
             funds -= amounts[i];
         }
+        // burn surplus rep
+        source.burnRep();
 
         // and set payee amounts to []
         delete payees;
         delete amounts;
+        delete repAmounts;
     }    
+
 
     function withdraw() external {
         require(msg.sender==address(source));
         // if Project Manager misbehaves or for other reasons
         // dOrg can withdraw at any time maybe.
         paymentToken.transfer(address(source), paymentToken.balanceOf(address(this)));
+    }
+
+    function freeze() external {
+        // lock contract functions until further action.
+    }
+
+    function unfreeze() external {
+        // unlock contract functions.
     }
 
 }
