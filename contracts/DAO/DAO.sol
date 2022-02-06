@@ -169,6 +169,10 @@ contract Source {  // maybe ERC1820
     }
 
     function transfer(uint256 _amount) external onlyProject() {
+        // TODO: A bit risky like this. 
+        // Or course there is currently no way to trigger this function
+        // other than if the payment amount is approved by DAO, but
+        // we should make this manifestly secure against malicious changes to the contract.
         defaultPaymentToken.transfer(msg.sender, _amount);
     }
 
