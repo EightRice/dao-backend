@@ -157,14 +157,9 @@ contract InternalProject {
         for (uint256 i; i<_payees.length; i++){
             // TODO: Maybe one could check whether repSplitting is in accordance with preferences.
             totalPaymentValue += _amounts[i];
-            totalRepValue += _repAmounts[i];
         } 
         require(totalPaymentValue <= funds, "Not enough funds in contract");
-        // mint rep to contract
-        source.mintRep(totalRepValue);
-        // TODO: If there is surplus Rep in the contract (because the Payroll Roster was vetoed or for some other reason)
-        // then there could be /should be a way to burn the rest.
-        // require(_isProject[msg.sender]);
+ 
         payees = _payees;
         amounts = _amounts;
         repAmounts = _repAmounts;
@@ -181,12 +176,10 @@ contract InternalProject {
         for (uint256 i; i<payees.length; i++){
             // RepSplittingOption memory repSplit = repSplittingOptions[_preferredRepSplitting[payees[i]]];
             paymentToken.transfer(payees[i], amounts[i]);
-            repToken.transfer(payees[i], repAmounts[i]);
+            source.mintRepTokens(payees[i], repAmounts[i]);
             // cant go negative, because otherwise transfer would have reverted!
             funds -= amounts[i];
         }
-        // burn surplus rep
-        source.burnRep();
 
         // and set payee amounts to []
         delete payees;
