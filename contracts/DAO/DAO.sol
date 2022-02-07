@@ -86,15 +86,7 @@ contract Source {  // maybe ERC1820
     }
 
 
-    function burnRep() external {
-        require(_isProject[msg.sender]);
-        repToken.burn(msg.sender, repToken.balanceOf(msg.sender));
-    }
 
-    function mintRep(uint256 _amount) external {
-        require(_isProject[msg.sender]);
-        repToken.mint(msg.sender, _amount);
-    }
 
     function setDeploymentFactories(address _clientProjectFactory, address _internalProjectFactory) external {
         require(false, " requires DAO VOTE. To be implemented");
@@ -169,6 +161,11 @@ contract Source {  // maybe ERC1820
     }
 
     
+    // TODO: Current attack vector with voting is that anyone can trigger a vote anytime
+    // and by current design there is only one vote per Motion at any time. So one could 
+    // congest the voting service (i.e. denial of service attack).
+    // Solution could be to add the index for the particular vote.
+    // TODO: Also currently options are encoded by different addresses
     function setDefaultPaymentToken(address _erc20TokenAddress)
     public 
     isEligibleToken(_erc20TokenAddress)
@@ -178,13 +175,18 @@ contract Source {  // maybe ERC1820
         defaultPaymentToken = IERC20(newPaymentTokenAddress);
     }
 
-    function transfer(uint256 _amount) external onlyProject() {
+    function withdrawByProject(uint256 _amount) external onlyProject() {
         // TODO: A bit risky like this. 
         // Or course there is currently no way to trigger this function
         // other than if the payment amount is approved by DAO, but
         // we should make this manifestly secure against malicious changes to the contract.
         defaultPaymentToken.transfer(msg.sender, _amount);
     }
+
+    function transferToken(address _erc20address, address _recipient, uint256 _amount){
+        //DAO Vote on transfer Token to address
+    }
+
 
     function liquidateInternalProject(address _project)
     external 
@@ -311,6 +313,7 @@ contract Source {  // maybe ERC1820
         // TODO: Check whethe I need to call this via RepToken(address(repToken))
         oldRepToken = repToken;
         repToken = IRepToken(voting.getElected(currentPoll[6].index));
+        _refundGas();
     }
 
 
