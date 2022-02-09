@@ -10,3 +10,7 @@
 
 # Hardhat
 cache
+artifacts
+
+# python scripts
+*.py

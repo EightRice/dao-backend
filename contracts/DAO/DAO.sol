@@ -62,11 +62,14 @@ contract Source {  // maybe ERC1820
     uint256 public initialVotingDuration = 7 days; // 1 weeks;
     uint256 public paymentInterval;
     uint120 public defaultPermilleThreshold = 500;  // 50 percent
+    uint256 public payoutRep = 100 * (10 ** 18);
     uint40 public defaultVotingDuration = uint40(10 days);
 
     /* ========== EVENTS ========== */
 
     event ProjectCreated(address _project);
+    event Refunded(address recipient, uint256 amount, bool successful);
+    event Payment(uint256 amount);
 
     /* ========== CONSTRUCTOR ========== */
     constructor (address votingContract, address repTokenAddress){
@@ -141,9 +144,13 @@ contract Source {  // maybe ERC1820
     /* ========== GOVERNANCE ========== */
 
 
-    function mintRepTokens(address payable payee, uint256 amount) external{
+    function mintRepTokens(address payee, uint256 amount) external{
         require(_isProject[msg.sender]);
-        repToken.mint(payee, amount);
+        _mintRepTokens(payee, amount);
+    }
+
+    function _mintRepTokens(address receiver, uint256 amount) internal {
+        repToken.mint(receiver, amount);
     }
 
     // change default payment token.
@@ -183,7 +190,7 @@ contract Source {  // maybe ERC1820
         defaultPaymentToken.transfer(msg.sender, _amount);
     }
 
-    function transferToken(address _erc20address, address _recipient, uint256 _amount){
+    function transferToken(address _erc20address, address _recipient, uint256 _amount) external {
         //DAO Vote on transfer Token to address
     }
 
@@ -225,21 +232,38 @@ contract Source {  // maybe ERC1820
 
 
     
-    function payout() external {
+    function payout()
+    external 
+    refundGas()
+    {
+        
         require(block.timestamp - startPaymentTimer > paymentInterval);
         //TODO: Maybe just those internal projects that are still active
+        uint256 totalAmount = 0;
+        uint256 totalRep = 0;
         for (uint256 i = 0; i<internalProjects.length; i++){
             // set amounts to zero again.
-            IInternalProject(internalProjects[i]).pay();
+            (uint256 amount, uint256 repAmount) = IInternalProject(internalProjects[i]).pay();
+            totalAmount += amount;
+            totalRep += repAmount;
         }
         // TODO!! Start this in constructor
         startPaymentTimer = block.timestamp;
 
-        // maybe refund the caller with DAO cash
-        _refundGas();
-
+        emit Payment(totalAmount);
         // Maybe earn some DORG.
+        _mintRepTokens(msg.sender, payoutRep);
+
         
+    }
+
+    modifier refundGas() {
+        uint256 _gasbefore = gasleft();
+        _;
+        // TODO: How can I not care about the return value something? I think the notaiton  is _, right?
+        uint256 refundAmount = (_gasbefore - gasleft()) * tx.gasprice;
+        (bool sent, bytes memory something) = payable(msg.sender).call{value: refundAmount}("");
+        emit Refunded(msg.sender, refundAmount, sent);
     }
 
     function _refundGas() internal {

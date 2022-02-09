@@ -145,6 +145,8 @@ contract InternalProject {
         }
     }
 
+    uint256 _totalPaymentValueThisPayroll = 0;
+    uint256 _totalRepValueThisPayroll = 0;
 
     function submitPayrollRoster(address payable[] memory _payees, uint256[] memory _amounts, uint256[] memory _repAmounts) external {
         require(msg.sender==teamLead && _payees.length == _amounts.length);
@@ -155,8 +157,8 @@ contract InternalProject {
         uint256 totalPaymentValue = 0;
         uint256 totalRepValue = 0;
         for (uint256 i; i<_payees.length; i++){
-            // TODO: Maybe one could check whether repSplitting is in accordance with preferences.
             totalPaymentValue += _amounts[i];
+            totalRepValue += _repAmounts[i];
         } 
         require(totalPaymentValue <= funds, "Not enough funds in contract");
  
@@ -170,11 +172,10 @@ contract InternalProject {
     }
    
 
-    function pay () external {
+    function pay() external returns(uint256 totalPaymentValue, uint256 totalRepValue) {
         require(msg.sender==address(source));
 
         for (uint256 i; i<payees.length; i++){
-            // RepSplittingOption memory repSplit = repSplittingOptions[_preferredRepSplitting[payees[i]]];
             paymentToken.transfer(payees[i], amounts[i]);
             source.mintRepTokens(payees[i], repAmounts[i]);
             // cant go negative, because otherwise transfer would have reverted!
@@ -185,13 +186,16 @@ contract InternalProject {
         delete payees;
         delete amounts;
         delete repAmounts;
+        totalPaymentValue = _totalPaymentValueThisPayroll;
+        totalRepValue = _totalRepValueThisPayroll;
+        _totalPaymentValueThisPayroll = 0;
+        _totalRepValueThisPayroll = 0;
+
     }    
 
 
     function withdraw() external {
         require(msg.sender==address(source));
-        // if Project Manager misbehaves or for other reasons
-        // dOrg can withdraw at any time maybe.
         paymentToken.transfer(address(source), paymentToken.balanceOf(address(this)));
     }
 

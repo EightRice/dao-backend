@@ -6,6 +6,10 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract RepToken is ERC20 {
     address public source;
+    // add top 7 holders only for the case that transfers are disabled
+
+    // mapping(address=>address) holderBelow;
+    // address topHolder;
     
     constructor(string memory name, string memory symbol) ERC20 (name, symbol)  {
         // _mint(msg.sender, initialSupply);
@@ -31,6 +35,11 @@ contract RepToken is ERC20 {
 
     function mint(address holder, uint256 amount) external onlyDAO() {
         _mint(holder, amount);
+        // walk up until holderabove has more
+        // for (uint256 j=0; j<100; j++){
+        //     if (_balances[holder]
+        // }
+        
     } 
 
     function burn(address holder, uint256 amount) external onlyDAO() {
