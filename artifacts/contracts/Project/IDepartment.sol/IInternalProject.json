@@ -6,7 +6,18 @@
     {
       "inputs": [],
       "name": "pay",
-      "outputs": [],
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "totalPaymentValue",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "totalRepValue",
+          "type": "uint256"
+        }
+      ],
       "stateMutability": "nonpayable",
       "type": "function"
     },

@@ -8,11 +8,12 @@ contract ClientProjectFactory{
 
     function createInternalProject(address payable _teamLead,
                                    address _repTokenAddress,
-                                   address _paymentTokenAddress,
                                    address _votingAddress,
                                    uint256 _votingDuration,
                                    uint256 _paymentInterval,
-                                   uint256 _requestedAmount) 
+                                   uint256 _requestedAmount,
+                                   uint256[] memory _requestedAmounts,
+                                   address[] memory _requestedTokenAddresses) 
     external
     returns(address)
     {
@@ -20,12 +21,11 @@ contract ClientProjectFactory{
         return address(new InternalProject(
                                 msg.sender, // the source.
                                 _teamLead,
-                                _repTokenAddress,
-                                _paymentTokenAddress,
                                 _votingAddress,
                                 _votingDuration,
                                 _paymentInterval,
-                                _requestedAmount));
+                                _requestedAmounts,
+                                _requestedTokenAddresses));
     }
 
 }

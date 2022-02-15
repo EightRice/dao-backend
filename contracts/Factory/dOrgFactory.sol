@@ -8,18 +8,27 @@ contract dOrgFactory{
 
     address public masterDORG;
 
-    constructor (address votingAddress, address repTokenAddress) {
-        createDORG(votingAddress, repTokenAddress, true);
+    constructor (
+        address votingAddress,
+        address repTokenAddress,
+        address[] memory newMembers,
+        uint256[] memory newBalances) {
+        createDORG(votingAddress, repTokenAddress, newMembers, newBalances, true);
     }
     
-    function createDORG(address votingAddress, address repTokenAddress, bool setAsNewMaster) 
+    function createDORG(
+        address votingAddress,
+        address repTokenAddress,
+        address[] memory newMembers,
+        uint256[] memory newBalances,
+        bool setAsNewMaster) 
     public
     returns(address){
         if (setAsNewMaster && msg.sender==masterDORG){
-            masterDORG = address(new Source(votingAddress,repTokenAddress));
+            masterDORG = address(new Source(votingAddress,repTokenAddress, newMembers, newBalances));
             return masterDORG;
         } else {
-            return address(new Source(votingAddress,repTokenAddress));
+            return address(new Source(votingAddress,repTokenAddress, newMembers, newBalances));
         }
     }
 

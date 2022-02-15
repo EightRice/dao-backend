@@ -87,6 +87,23 @@ contract ClientProject{
     // (10**18) * (repToPaymentRatio) / (10 ** 9)
     // where the repToPaymentRatio = 3000 * 10 ** 9
 
+    enum MotionType {
+        removeTeamMember,
+        changeSourcingLead,
+        disputeProject,
+        refundClient
+    }
+
+    struct Motion {
+        MotionType motionType;
+        uint256 votesFor;
+        uint256 votesAgainst;
+        uint256 timestamp;
+        address nominee;
+        bool inactive;
+    }
+
+    Motion[] public motions;
 
     /* ========== MILESTONES ========== */
 
@@ -201,8 +218,20 @@ contract ClientProject{
         excludeMember[msg.sender][_teamMember] = true;
         voteToExclude[_teamMember] += 1;
 
+        
+
+
         if (voteToExclude[_teamMember]> (team.length * exclusionThreshold ) / 100){
             _isTeamMember[_teamMember]= false;
+            // TODO: add these to the motions, once it passes
+            motions.push(Motion({
+                motionType: MotionType.removeTeamMember,
+                votesFor: voteToExclude[_teamMember],
+                votesAgainst: 0,
+                timestamp: block.timestamp,
+                nominee: _teamMember,
+                inactive: true
+            }));
         }
     }
     
@@ -249,7 +278,7 @@ contract ClientProject{
         }));
     }
 
-    function addAmountToMilestone(uint256 milestoneIndex, uint256 amount)public{
+    function addAmountToMilestone(uint256 milestoneIndex, uint256 amount) public {
         require(msg.sender == sourcingLead,"Only the sourcing lead can request payment from client");
         milestones[milestoneIndex].requestedAmount = amount;
         emit RequestedAmountAddedToMilestone(milestoneIndex, amount);
@@ -293,10 +322,9 @@ contract ClientProject{
 
 
 
-    function submitPayrollRoster(uint256 milestoneIndex, address[] memory payees, uint256[] memory amounts ) external {
+    function submitPayrollRoster(uint256 milestoneIndex, address[] memory payees, uint256[] memory amounts) external {
         require(msg.sender==sourcingLead && payees.length == amounts.length);
         milestones[milestoneIndex].payrollVetoDeadline = block.timestamp + vetoDurationForPayments;
-        
         emit PayrollRosterSubmitted(milestoneIndex);  // maybe milestones[milestoneIndex].payrollVetoDeadline
     }
 

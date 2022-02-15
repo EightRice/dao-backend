@@ -35,22 +35,18 @@ contract InternalProject {
     uint256 public numberOfVotes;
     uint256 public paymentInterval;
 
-    address payable[] public payees;
-    uint256[] public amounts;
-    uint256[] public repAmounts;
-
-
-    struct RepSplittingOption{
-        uint32 rep;
-        uint32 pay;
+    struct Payout {
+        address payee;
+        uint256[] erc20Amounts;
+        address[] erc20Addresses;
     }
 
-    RepSplittingOption[] public repSplittingOptions;
-    mapping(address=>uint16) public _preferredRepSplitting;
+    Payout[] payoutSpecs;
 
     address payable[] team;
     mapping(address=>bool) _isTeamMember;
-    uint256 public funds;
+    mapping(address=>uint256) public funds;
+    address[] public registeredPaymentTokens;
     address payable public teamLead;
 
     uint256 MILLE = 1000;
@@ -63,22 +59,24 @@ contract InternalProject {
 
     constructor(address _sourceAddress,
                 address payable _teamLead,
-                address repTokenAddress,
-                address paymentTokenAddress,
                 address _votingAddress,
                 uint256 _votingDuration,
                 uint256 _paymentInterval,
-                uint256 _requestedAmount){
+                uint256[] memory _requestedAmounts,
+                address[] memory _requestedTokenAddresses){
                     
+        require(_requestedAmounts.length==_requestedTokenAddresses.length);
         paymentInterval = _paymentInterval;
-        funds = _requestedAmount;
+        for (uint256 i; i<_requestedAmounts.length; i++){
+            funds[_requestedTokenAddresses[i]] = _requestedAmounts[i];
+        }
+        registeredPaymentTokens = _requestedTokenAddresses;
         status = ProjectStatus.proposal;
         teamLead = _teamLead;
         team.push(teamLead);
         _isTeamMember[teamLead] = true;
         source = ISource(_sourceAddress);
-        repToken = IRepToken(repTokenAddress);
-        paymentToken = IERC20(paymentTokenAddress);
+        repToken = IRepToken(_requestedTokenAddresses[0]);
         startingTime = block.timestamp;
         votingDuration = _votingDuration;
         voting = IVoting(_votingAddress);
@@ -86,23 +84,8 @@ contract InternalProject {
         // PAYMENT OPTIONS ? (A,B  or C)
 
         // RepSplitting Options
-        _addRepSplittingOption(uint32(500), uint32(500));
         // _addRepSplittingOption(uint32(250), uint32(750));
         // _addRepSplittingOption(uint32(0), uint32(1000));
-    }
-
-    function _addRepSplittingOption(uint32 _rep, uint32 _pay) internal {
-        repSplittingOptions.push(RepSplittingOption({rep: _rep, pay: _pay}));
-    }
-
-    function addRepSplittingOption(uint32 _rep, uint32 _pay) external {
-        require(msg.sender==teamLead);
-        require(_rep + _pay == MILLE, "overpay alert");
-        _addRepSplittingOption(_rep, _pay);
-    }
-
-    function _setRepSplittingOption(uint16 _optionIndex) external {
-        _preferredRepSplitting[msg.sender] = _optionIndex;
     }
 
 
@@ -141,26 +124,40 @@ contract InternalProject {
     function _registerVote() internal {
         status = (votes_pro > votes_against) ? ProjectStatus.active : ProjectStatus.rejected ;
         if (status == ProjectStatus.active){
-            source.transfer(funds);
+            for (uint256 i; i<registeredPaymentTokens.length; i++){
+                source.transferToken(registeredPaymentTokens[i], address(this), funds[registeredPaymentTokens[i]]);
+            }
         }
     }
 
     uint256 _totalPaymentValueThisPayroll = 0;
     uint256 _totalRepValueThisPayroll = 0;
 
-    function submitPayrollRoster(address payable[] memory _payees, uint256[] memory _amounts, uint256[] memory _repAmounts) external {
+
+
+    function submitPayrollRoster(address payable[] memory _payees, uint256[][] memory _amounts, uint256[][] memory _erc20Addresses) external {
         require(msg.sender==teamLead && _payees.length == _amounts.length);
         // TODO: do we need the _payees.length == _amounts.length requirements.
         // Will the contract function call revert if _amounts[i] doesnt exist?
         // If not, then we need to add another row with _repAmount length. 
         require(block.timestamp - source.getStartPaymentTimer() < (paymentInterval * 3) / 4);
+
+        for (uint256 i=0; i<_payees.length; i++){
+            payoutSpecs.push(Payout({
+                payee: _payees[i],
+                erc20Amounts: _erc20Amounts[i],
+                erc20Addresses _erc20Addresses[i]
+            }))
+        }
+        
         uint256 totalPaymentValue = 0;
         uint256 totalRepValue = 0;
         for (uint256 i; i<_payees.length; i++){
             totalPaymentValue += _amounts[i];
             totalRepValue += _repAmounts[i];
         } 
-        require(totalPaymentValue <= funds, "Not enough funds in contract");
+        // TODO: Maybe check for available funds
+        // require(totalPaymentValue <= funds, "Not enough funds in contract");
  
         payees = _payees;
         amounts = _amounts;
@@ -175,17 +172,21 @@ contract InternalProject {
     function pay() external returns(uint256 totalPaymentValue, uint256 totalRepValue) {
         require(msg.sender==address(source));
 
-        for (uint256 i; i<payees.length; i++){
-            paymentToken.transfer(payees[i], amounts[i]);
-            source.mintRepTokens(payees[i], repAmounts[i]);
-            // cant go negative, because otherwise transfer would have reverted!
-            funds -= amounts[i];
+        
+        for (uint256 i; i<payoutSpecs.length; i++){
+            for (uint256 j; j<payoutSpecs[i].erc20Addresses.length; j++){
+                uint256 paymentAmount =  payoutSpecs[i].erc20Amounts[j];
+                IERC20(payoutSpecs[i].erc20Addresses[j]).transfer(payoutSpecs[i].payee, paymentAmount);
+                funds[payoutSpecs[i].erc20Addresses[j]] -= paymentAmount[i];
+            }
+            
         }
 
         // and set payee amounts to []
-        delete payees;
-        delete amounts;
-        delete repAmounts;
+        // delete payees;
+        // delete amounts;
+        // delete repAmounts;
+        delete payoutSpecs;
         totalPaymentValue = _totalPaymentValueThisPayroll;
         totalRepValue = _totalRepValueThisPayroll;
         _totalPaymentValueThisPayroll = 0;
@@ -196,7 +197,10 @@ contract InternalProject {
 
     function withdraw() external {
         require(msg.sender==address(source));
-        paymentToken.transfer(address(source), paymentToken.balanceOf(address(this)));
+        for (uint256 i; i<registeredPaymentTokens.length; i++){
+            uint256 amount = IERC20(registeredPaymentTokens[i]).balanceOf(address(this));
+            IERC20(registeredPaymentTokens[i]).transfer(address(source), amount);
+        }
     }
 
 

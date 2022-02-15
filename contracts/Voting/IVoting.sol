@@ -10,4 +10,5 @@ interface IVoting {
     function getElected(uint256 poll_id) view external returns(address);
     function getStatusAndElected(uint256 poll_id) view external returns(uint8, address);
     function stop(uint256 poll_id) external;
+    function retrieve(uint256 poll_id) view external returns(uint8, uint40, uint256, uint256, address);
 }

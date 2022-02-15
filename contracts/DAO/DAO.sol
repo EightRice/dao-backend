@@ -20,7 +20,7 @@ contract Source {  // maybe ERC1820
     
     bool public deprecated;
 
-    enum Motion {setDefaultPaymentToken,
+    enum MotionType {setDefaultPaymentToken,
                  removePaymentToken,
                  changePaymentInterval,
                  resetPaymentTimer,
@@ -29,8 +29,9 @@ contract Source {  // maybe ERC1820
                  migrateRepToken}
     
     struct Poll {
+        MotionType motionType;
         uint256 index;
-        uint8 status;
+        address internalProjectAddress;
     }
 
     /* ========== CONTRACT VARIABLES ========== */
@@ -69,14 +70,15 @@ contract Source {  // maybe ERC1820
 
     event ProjectCreated(address _project);
     event Refunded(address recipient, uint256 amount, bool successful);
-    event Payment(uint256 amount);
+    event Payment(uint256 amount, uint256 repAmount);
 
     /* ========== CONSTRUCTOR ========== */
-    constructor (address votingContract, address repTokenAddress){
+    constructor (address votingContract, address repTokenAddress, address[] memory initialMembers, uint256[] memory initialRep){
         
         dOrgFactory = IdOrgFactory(msg.sender);
         voting = IVoting(votingContract);
         repToken = IRepToken(repTokenAddress);
+        _importMembers(initialMembers, initialRep);
         arbitrationEscrow = new ArbitrationEscrow();
 
         // either at construction or after set default paymentToken
@@ -89,6 +91,14 @@ contract Source {  // maybe ERC1820
     }
 
 
+    function _importMembers(address[] memory initialMembers,uint256[] memory initialRep) internal{
+        // only once!
+        require(initialMembers.length==initialRep.length);
+        for (uint256 i=0; i< initialMembers.length; i++){
+            repToken.mint(initialMembers[i], initialRep[i]);
+        }
+    }
+    
 
 
     function setDeploymentFactories(address _clientProjectFactory, address _internalProjectFactory) external {
@@ -101,8 +111,11 @@ contract Source {  // maybe ERC1820
     
     /* ========== PROJECT HANDLING ========== */
 
-    function createClientProject(address payable _client, address payable _arbiter)
+    // TODO:
+    // 
+    function createClientProject(address payable _client, address payable _arbiter, address paymentToken)
     public
+    isEligibleToken(paymentToken)
      {
         require(!deprecated);
         address projectAddress = clientProjectFactory.createClientProject(
@@ -112,7 +125,7 @@ contract Source {  // maybe ERC1820
             address(repToken),
             address(arbitrationEscrow),
             address(voting),
-            address(defaultPaymentToken),
+            paymentToken,
             initialVotingDuration
         );
         clientProjects.push(projectAddress);
@@ -121,18 +134,17 @@ contract Source {  // maybe ERC1820
     }
 
 
-    function createInternalProject(uint256 _requestedAmount) 
+    function createInternalProject(uint256[] memory _requestedAmounts, address[] memory _requestedTokenAddresses) 
     external
     {
         require(!deprecated);
         address projectAddress = internalProjectFactory.createInternalProject(
                                 payable(msg.sender),
-                                address(repToken),
-                                address(defaultPaymentToken),
                                 address(voting),
                                 initialVotingDuration,
                                 paymentInterval,
-                                _requestedAmount);
+                                _requestedAmounts,
+                                _requestedTokenAddresses);
 
         internalProjects.push(address(projectAddress));
         _isProject[address(projectAddress)] = true;
@@ -190,9 +202,16 @@ contract Source {  // maybe ERC1820
         defaultPaymentToken.transfer(msg.sender, _amount);
     }
 
-    function transferToken(address _erc20address, address _recipient, uint256 _amount) external {
+    function transferToken(address _erc20address, address _recipient, uint256 _amount) 
+    external 
+    onlyProject(){
         //DAO Vote on transfer Token to address
+        // isEligibleToken(_erc20address)
+        
+        IERC20(_erc20address).transfer(_recipient, _amount);
+        
     }
+
 
 
     function liquidateInternalProject(address _project)
@@ -209,6 +228,8 @@ contract Source {  // maybe ERC1820
         address unconvertedDuration = voting.getElected(currentPoll[0].index);
         paymentInterval = uint256(uint160(unconvertedDuration));
     }
+
+    
 
     function resetPaymentTimer() 
     external 
@@ -228,7 +249,11 @@ contract Source {  // maybe ERC1820
 
     // make sure no funds are locked in the departments!
     // TODO!!! Change default at each project.
-    
+    function getPollStatus(uint256 pollIndex) external view
+    returns(uint8, uint40, uint256, uint256, address)
+    {
+        return voting.retrieve(pollIndex);
+    }
 
 
     
@@ -250,9 +275,10 @@ contract Source {  // maybe ERC1820
         // TODO!! Start this in constructor
         startPaymentTimer = block.timestamp;
 
-        emit Payment(totalAmount);
+        emit Payment(totalAmount, totalRep);
         // Maybe earn some DORG.
-        _mintRepTokens(msg.sender, payoutRep);
+        // TODO: Maybe discuss with feedback
+        // _mintRepTokens(msg.sender, payoutRep);
 
         
     }
@@ -294,28 +320,22 @@ contract Source {  // maybe ERC1820
     modifier voteOnMotion(uint8 _motion, address _address) {
         // Motion motion = Motion.setDefaultPaymentToken;
         // Motion is 0
-        require(currentPoll[_motion].status <= 1, "inactive or active");
-        if (currentPoll[_motion].status == 0){
+        require(voting.getStatus(currentPoll[_motion].index) <= 1, "inactive or active");
+        if (voting.getStatus(currentPoll[_motion].index) == 0){
             // TODO!! If one changes the enum in Voting to include other statuses then
             // one should maybe not use the exclusion here.
             currentPoll[_motion].index = voting.start(4, defaultVotingDuration, defaultPermilleThreshold, uint120(repToken.totalSupply()));
-            currentPoll[_motion].status = 1;
         }
 
-        currentPoll[0].status = voting.safeVoteReturnStatus(
+        voting.safeVoteReturnStatus(
             currentPoll[0].index,
             msg.sender,
             _address,
             uint128(repToken.balanceOf(msg.sender)));
 
-        if (currentPoll[0].status == 2){
+        if (voting.getStatus(currentPoll[_motion].index) == 2){
             _;
             // reset status to inactive, so that polls can take place again.
-            currentPoll[0].status == 0;
-        }
-        if (currentPoll[0].status == 3){
-            // reset status to inactive, so that polls can take place again.
-            currentPoll[0].status == 0;
         }
     }
 

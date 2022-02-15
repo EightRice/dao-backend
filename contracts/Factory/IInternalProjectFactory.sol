@@ -9,7 +9,8 @@ interface IInternalProjectFactory {
                                    address _votingAddress,
                                    uint256 _votingDuration,
                                    uint256 _paymentInterval,
-                                   uint256 _requestedAmount) 
+                                   uint256[] memory _requestedAmounts,
+                                   uint256[] memory _requestedTokenAddresses) 
     external
     returns(address);
 }

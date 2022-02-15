@@ -17,12 +17,14 @@ contract Voting {
         Status votingStatus;
         uint40 deadline;
         uint120 threshold;
+        uint256 votesFor;
+        uint256 votesAgainst;
         uint120 totalAmount;
-        address elected;
+        address nominee;
     }
 
     uint256 MILLE = 1000;
-    mapping(address=>mapping(uint256=>Info)) voteInfo;
+    mapping(address=>mapping(uint256=>Info)) public voteInfo;
     mapping(address=>uint256) polls;
     mapping(address=>mapping(uint256=>mapping(address=>uint256))) public votes;
     mapping(address=>mapping(uint256=>mapping(address=>bool))) public alreadyVoted;
@@ -34,8 +36,10 @@ contract Voting {
             votingStatus: Status.active,
             deadline: _deadline,
             threshold: _threshold,
+            votesFor: 0,
+            votesAgainst: 0,
             totalAmount: _totalAmount,
-            elected: address(0x0)});
+            nominee: address(0x0)});
         return polls[msg.sender];
     }
 
@@ -78,13 +82,23 @@ contract Voting {
        return uint8(voteInfo[msg.sender][poll_id].votingStatus); 
     }
 
+    function retrieve(uint256 poll_id) view external 
+    returns(uint8, uint40, uint256, uint256, address){
+        return (
+            uint8(voteInfo[msg.sender][poll_id].votingStatus),
+            voteInfo[msg.sender][poll_id].deadline,
+            voteInfo[msg.sender][poll_id].votesFor,
+            voteInfo[msg.sender][poll_id].votesAgainst,
+            voteInfo[msg.sender][poll_id].nominee);
+    }
+
     function getElected(uint256 poll_id) view external returns(address){
-       return voteInfo[msg.sender][poll_id].elected; 
+       return voteInfo[msg.sender][poll_id].nominee; 
     }
 
     function getStatusAndElected(uint256 poll_id) view external returns(uint8, address){
         return (uint8(voteInfo[msg.sender][poll_id].votingStatus),
-                voteInfo[msg.sender][poll_id].elected);
+                voteInfo[msg.sender][poll_id].nominee);
     }
 
     function queryVotes(uint256 poll_id, address votedOn) view external returns(uint256){
