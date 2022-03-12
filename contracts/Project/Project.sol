@@ -363,9 +363,8 @@ contract ClientProject{
         status = ProjectStatus.inDispute;
         emit Disputed(msg.sender);
         // TODO: emit an event also in case that there are no milestone indices (for the client)
-
     }
-   
+    
     function arbitration(bool forInvoice)public{
         require(msg.sender == arbiter && status==ProjectStatus.inDispute);
         if (forInvoice){

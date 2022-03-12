@@ -18,12 +18,6 @@ contract RepToken is ERC20 {
 
 
 
-    // TODO! MUST BE REMOVED
-    function FREEMINTING(uint256 amount) external {
-        _mint(msg.sender, amount);
-    }
-
-
     function _transfer(
         address sender,
         address recipient,

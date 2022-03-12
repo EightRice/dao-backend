@@ -6,14 +6,10 @@ import "../Token/RepToken.sol";
 
 contract dOrgFactory{
 
-    address public masterDORG;
+    address masterDORG;
 
-    constructor (
-        address votingAddress,
-        address repTokenAddress,
-        address[] memory newMembers,
-        uint256[] memory newBalances) {
-        createDORG(votingAddress, repTokenAddress, newMembers, newBalances, true);
+    constructor (){
+        masterDORG = msg.sender;
     }
     
     function createDORG(

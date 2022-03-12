@@ -135,7 +135,7 @@ contract InternalProject {
 
 
 
-    function submitPayrollRoster(address payable[] memory _payees, uint256[][] memory _amounts, uint256[][] memory _erc20Addresses) external {
+    function submitPayrollRoster(address payable[] memory _payees, uint256[][] memory _amounts, address[][] memory _erc20Addresses) external {
         require(msg.sender==teamLead && _payees.length == _amounts.length);
         // TODO: do we need the _payees.length == _amounts.length requirements.
         // Will the contract function call revert if _amounts[i] doesnt exist?
@@ -145,23 +145,23 @@ contract InternalProject {
         for (uint256 i=0; i<_payees.length; i++){
             payoutSpecs.push(Payout({
                 payee: _payees[i],
-                erc20Amounts: _erc20Amounts[i],
-                erc20Addresses _erc20Addresses[i]
-            }))
+                erc20Amounts: _amounts[i],
+                erc20Addresses: _erc20Addresses[i]
+            }));
         }
         
-        uint256 totalPaymentValue = 0;
-        uint256 totalRepValue = 0;
-        for (uint256 i; i<_payees.length; i++){
-            totalPaymentValue += _amounts[i];
-            totalRepValue += _repAmounts[i];
-        } 
+        // uint256 totalPaymentValue = 0;
+        // uint256 totalRepValue = 0;
+        // for (uint256 i; i<_payees.length; i++){
+        //     totalPaymentValue += _amounts[i];
+        //     totalRepValue += _repAmounts[i];
+        // } 
         // TODO: Maybe check for available funds
         // require(totalPaymentValue <= funds, "Not enough funds in contract");
  
-        payees = _payees;
-        amounts = _amounts;
-        repAmounts = _repAmounts;
+        // payees = _payees;
+        // amounts = _amounts;
+        // repAmounts = _repAmounts;
 
         // check whether requested and then approved amount is not exceeded
 
@@ -177,7 +177,7 @@ contract InternalProject {
             for (uint256 j; j<payoutSpecs[i].erc20Addresses.length; j++){
                 uint256 paymentAmount =  payoutSpecs[i].erc20Amounts[j];
                 IERC20(payoutSpecs[i].erc20Addresses[j]).transfer(payoutSpecs[i].payee, paymentAmount);
-                funds[payoutSpecs[i].erc20Addresses[j]] -= paymentAmount[i];
+                funds[payoutSpecs[i].erc20Addresses[j]] -= paymentAmount;
             }
             
         }

@@ -12,6 +12,8 @@ import "../Factory/IdOrgFactory.sol";
 
 
 
+
+
 /// @title Main DAO contract
 /// @author dOrg
 /// @dev Experimental status
@@ -19,7 +21,7 @@ import "../Factory/IdOrgFactory.sol";
 contract Source {  // maybe ERC1820
     
     bool public deprecated;
-
+    
     enum MotionType {setDefaultPaymentToken,
                  removePaymentToken,
                  changePaymentInterval,
@@ -27,7 +29,7 @@ contract Source {  // maybe ERC1820
                  liquidateInternalProject,
                  migrateDORG,
                  migrateRepToken}
-    
+                 
     struct Poll {
         MotionType motionType;
         uint256 index;
@@ -111,8 +113,7 @@ contract Source {  // maybe ERC1820
     
     /* ========== PROJECT HANDLING ========== */
 
-    // TODO:
-    // 
+
     function createClientProject(address payable _client, address payable _arbiter, address paymentToken)
     public
     isEligibleToken(paymentToken)

@@ -7,11 +7,9 @@ contract ClientProjectFactory{
 
 
     function createInternalProject(address payable _teamLead,
-                                   address _repTokenAddress,
                                    address _votingAddress,
                                    uint256 _votingDuration,
                                    uint256 _paymentInterval,
-                                   uint256 _requestedAmount,
                                    uint256[] memory _requestedAmounts,
                                    address[] memory _requestedTokenAddresses) 
     external
