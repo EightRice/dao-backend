@@ -8,7 +8,8 @@ enum PollStatus {
     paused,
     passed,
     failed,
-    noquorum,
+    noQuorum,
+    noMajority,
     tied
 }
 
@@ -21,7 +22,7 @@ interface IRepTokenOnlyBalance {
 
 struct PollInfo {
         bytes4 implementedFunctionId;
-        bytes32[] options;
+        bytes32 value;
         uint256[] votes;
         uint256 maxIndex;
         uint256 deadline;
@@ -34,22 +35,36 @@ struct PollInfo {
         PollStatus pollStatus;
     }
 
+struct DefaultPollValues {
+    uint256 maxDuration;
+    int256 threshold;
+    int256 quorum;
+    address repTokenAddress;
+}
 
 contract Poll {
 
     int256 internal THRESHOLD_BASISPOINTS = 10_000;
-    int256 internal SUPER_MAJORITY = 5_000;
-    int256 internal CONSTITUTIONAL_MAJORITY = 7_500;
 
-    mapping(bytes32=>uint256) public defaultMaxDuration;
-    mapping(bytes32=>int256) public defaultThreshold;
-    mapping(bytes32=>int256) public defaultQuroum;
-    mapping(bytes32=>address) public defaultRepTokenAddress;
+    DefaultPollValues[] public defaultPollValues;
 
     uint256 public latestPollIndex = 0;
     mapping(uint256 => PollInfo) public pollInfo;
     mapping(uint256 => mapping(address=>bool)) _alreadyVoted; 
 
+    function _addNewDefaultPollValues(
+        uint256 maxDuration,
+        int256 threshold,
+        int256 quorum,
+        address repTokenAddress
+    ) internal {
+        defaultPollValues.push(DefaultPollValues({
+            maxDuration: maxDuration,
+            threshold: threshold,
+            quorum: quorum,
+            repTokenAddress: repTokenAddress
+        }));
+    }
     
     // function startPoll(
     //     bytes4 implementedFunctionId,
@@ -67,23 +82,25 @@ contract Poll {
     //         quorumReferenceValue);
     // }
 
+    mapping(bytes4=>uint256) public indexForDefaultPollValue;
 
     function _startPollWithDefaultValues(
         bytes4 implementedFunctionId,
-        bytes32[] memory options,
+        bytes32 value,
         uint256 thresholdReferenceValue,
         uint256 quorumReferenceValue)
     internal
     {
+        uint256 index = indexForDefaultPollValue[implementedFunctionId];
         _startPoll(
             implementedFunctionId,
-            options,
-            defaultMaxDuration[implementedFunctionId],
-            defaultThreshold[implementedFunctionId],
+            value,
+            defaultPollValues[index].maxDuration,
+            defaultPollValues[index].threshold,
             thresholdReferenceValue,
-            defaultQuroum[implementedFunctionId],
+            defaultPollValues[index].quorum,
             quorumReferenceValue,
-            defaultRepTokenAddress[implementedFunctionId]
+            defaultPollValues[index].repTokenAddress
         );
     }
 
@@ -91,7 +108,7 @@ contract Poll {
 
     function _startPoll(
         bytes4 implementedFunctionId,
-        bytes32[] memory options,
+        bytes32 value,
         uint256 maxDuration,
         int256 threshold,
         uint256 thresholdRef,
@@ -104,8 +121,8 @@ contract Poll {
     {
         pollInfo[latestPollIndex] = PollInfo({
             implementedFunctionId: implementedFunctionId,
-            options: options,
-            votes: new uint256[](options.length + 1),  // all the options and against
+            value: value,
+            votes: new uint256[](2),  // all the options and against
             maxIndex: 0,
             deadline: block.timestamp + maxDuration,
             threshold: threshold,
@@ -171,7 +188,7 @@ contract Poll {
         
         if ((pollInfo[pollIndex].quorum >= 0) &&
             (totalVotes < (int256(pollInfo[pollIndex].quorumRef) * pollInfo[pollIndex].quorum) / THRESHOLD_BASISPOINTS)) {
-            pollInfo[pollIndex].pollStatus = PollStatus.noquorum;
+            pollInfo[pollIndex].pollStatus = PollStatus.noQuorum;
             return ;
         }
 
@@ -190,14 +207,21 @@ contract Poll {
             } else {
                 // measure votes relative to thresholdRef
                 thrCondition = int256(pollInfo[pollIndex].votes[maxIndex]) >= (int256(pollInfo[pollIndex].thresholdRef) * pollInfo[pollIndex].threshold) / THRESHOLD_BASISPOINTS;
+            }   
+            if (thrCondition) {
+                pollInfo[pollIndex].pollStatus = PollStatus.noMajority;
+                return ;
             }
-            pollInfo[pollIndex].pollStatus = thrCondition ? PollStatus.passed : PollStatus.failed;
-            return ;
-        } else {
-            // simple majority
-            pollInfo[pollIndex].pollStatus = PollStatus.passed;
-            return ;
-        }
+            // pollInfo[pollIndex].pollStatus = thrCondition ? PollStatus.passed : PollStatus.noMajority;
+            // return ;
+        } 
+        // else: simple majority
+
+        // TODO: We assume that option 0 is Reject, option 1 is Approve
+        // But what if we have multiple options.
+        pollInfo[pollIndex].pollStatus = (maxIndex == 1) ? PollStatus.passed : PollStatus.failed;
+
+
 
        
     }
@@ -215,7 +239,7 @@ contract Poll {
         pollInfo[pollIndex].totalVotesCast += 1;
     }
 
-    modifier voteModifier(uint256 pollIndex, uint256 optionIndex){
+    modifier castVote(uint256 pollIndex, uint256 optionIndex){
         PollStatus newPollstatus = _vote(pollIndex, optionIndex);
         if (newPollstatus == PollStatus.passed){
             _;
