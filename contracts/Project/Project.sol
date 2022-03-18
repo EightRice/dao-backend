@@ -193,7 +193,8 @@ contract ClientProject{
     /* ========== REPUTATION ========== */
 
     function setRepWeiValuePerGweiTokenValue(uint256 _repWeiPerPaymentGwei) public {
-        require(msg.sender == address(source) || msg.sender==sourcingLead);
+        // TODO: Careful with the guard
+        // require(msg.sender == address(source) || msg.sender==sourcingLead);
         repWeiPerPaymentGwei = _repWeiPerPaymentGwei;
     }
 
@@ -300,7 +301,8 @@ contract ClientProject{
     }
 
     function _changePaymentMethod(address _tokenAddress, uint256 _repWeiPerPaymentGwei) internal {
-        require(msg.sender == address(source) || msg.sender== sourcingLead, "source or sourcing Lead!");
+        // TODO: Maybe a guard should be put in place here.
+        // require(msg.sender == address(source) || msg.sender== sourcingLead, "source or sourcing Lead!");
         paymentToken = IERC20(_tokenAddress);
         // set the new ratio.
         setRepWeiValuePerGweiTokenValue(_repWeiPerPaymentGwei);

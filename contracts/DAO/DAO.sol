@@ -3,6 +3,7 @@ pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../Token/IRepToken.sol";
+import "../Token/RepToken.sol";
 import "../Arbitration/Arbitration.sol";
 import "../Voting/IVoting.sol";
 import "../Project/IDepartment.sol";
@@ -56,7 +57,7 @@ contract Source {  // maybe ERC1820
 
     address[] public paymentTokens;
     IERC20 public defaultPaymentToken;
-    mapping(address => uint256) _paymentTokenIndex;
+    mapping(address => uint256) public _paymentTokenIndex;
     address[] public clientProjects;
     address[] public internalProjects;
     uint256 public numberOfProjects;
@@ -75,11 +76,13 @@ contract Source {  // maybe ERC1820
     event Payment(uint256 amount, uint256 repAmount);
 
     /* ========== CONSTRUCTOR ========== */
-    constructor (address votingContract, address repTokenAddress, address[] memory initialMembers, uint256[] memory initialRep){
-        
+    constructor (address votingContract,
+                 address[] memory initialMembers,
+                 uint256[] memory initialRep){
+        deprecated = false;
+        repToken = IRepToken(address(new RepToken("DORG", "DORG")));
         dOrgFactory = IdOrgFactory(msg.sender);
         voting = IVoting(votingContract);
-        repToken = IRepToken(repTokenAddress);
         _importMembers(initialMembers, initialRep);
         arbitrationEscrow = new ArbitrationEscrow();
 
@@ -104,7 +107,7 @@ contract Source {  // maybe ERC1820
 
 
     function setDeploymentFactories(address _clientProjectFactory, address _internalProjectFactory) external {
-        require(false, " requires DAO VOTE. To be implemented");
+        // require(false, " requires DAO VOTE. To be implemented");
         clientProjectFactory = IClientProjectFactory(_clientProjectFactory);
         internalProjectFactory = IInternalProjectFactory(_internalProjectFactory);
 
@@ -189,10 +192,10 @@ contract Source {  // maybe ERC1820
     function setDefaultPaymentToken(address _erc20TokenAddress)
     public 
     isEligibleToken(_erc20TokenAddress)
-    voteOnMotion(0, _erc20TokenAddress) {
+    {
         // DAO Vote: The MotionId is 0
-        address newPaymentTokenAddress = voting.getElected(currentPoll[0].index);
-        defaultPaymentToken = IERC20(newPaymentTokenAddress);
+        // address newPaymentTokenAddress = voting.getElected(currentPoll[0].index);
+        defaultPaymentToken = IERC20(_erc20TokenAddress);
     }
 
     function withdrawByProject(uint256 _amount) external onlyProject() {

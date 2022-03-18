@@ -3,7 +3,7 @@ pragma solidity ^0.8.7;
 
 import "../Project/Department.sol";
 
-contract ClientProjectFactory{
+contract InternalProjectFactory{
 
 
     function createInternalProject(address payable _teamLead,
