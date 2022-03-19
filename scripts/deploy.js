@@ -42,7 +42,7 @@ async function deployAll() {
   // Deploy PaymentToken
   contractName = "PaymentToken"
   TestPaymentTokenFactory = await ethers.getContractFactory(contractName);
-  USDCoin = await TestPaymentTokenFactory.connect(SIGNERS.ALICE).deploy("Circle USD", "USDC"); 
+  USDCoin = await TestPaymentTokenFactory.connect(SIGNERS.BOB).deploy("Circle USD", "USDC"); 
   await USDCoin.deployed()
   console.log("The address of " + contractName + " is " + USDCoin.address)
   // console.log("The gas used: " + Object.keys(tx))
@@ -50,14 +50,14 @@ async function deployAll() {
 
   contractName = "ClientProjectFactory"
   ClientProjectFactoryFactory = await ethers.getContractFactory(contractName);
-  clientProjectFactory = await ClientProjectFactoryFactory.connect(SIGNERS.ALICE).deploy()
+  clientProjectFactory = await ClientProjectFactoryFactory.connect(SIGNERS.BOB).deploy()
   tx = await clientProjectFactory.deployed()
   console.log("The address of " + contractName + " is " + clientProjectFactory.address)
   // Deploy InternalProjectFactory 
 
   contractName = "InternalProjectFactory"
   InternalProjectFactoryFactory = await ethers.getContractFactory(contractName);
-  internalProjectFactory = await InternalProjectFactoryFactory.connect(SIGNERS.ALICE).deploy()
+  internalProjectFactory = await InternalProjectFactoryFactory.connect(SIGNERS.BOB).deploy()
   await internalProjectFactory.deployed()
   console.log("The address of " + contractName + " is " + internalProjectFactory.address)
   
@@ -65,7 +65,7 @@ async function deployAll() {
   // Deploy Voting 
   contractName = "Voting"
   VotingFactory = await ethers.getContractFactory(contractName);
-  voting = await InternalProjectFactoryFactory.connect(SIGNERS.ALICE).deploy()
+  voting = await InternalProjectFactoryFactory.connect(SIGNERS.BOB).deploy()
   await voting.deployed()
   console.log("The address of " + contractName + " is " + voting.address)
 
@@ -74,7 +74,7 @@ async function deployAll() {
   let initialRep = [1000, 1000, 1000] 
   contractName = "Source"
   SourceFactory = await ethers.getContractFactory(contractName);
-  source = await SourceFactory.connect(SIGNERS.ALICE).deploy(
+  source = await SourceFactory.connect(SIGNERS.BOB).deploy(
     voting.address,
     initialMembers,
     initialRep)
