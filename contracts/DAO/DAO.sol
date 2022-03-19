@@ -63,7 +63,7 @@ contract Source {  // maybe ERC1820
     uint256 public numberOfProjects;
     mapping(address=>bool) _isProject;
 
-    uint256 public initialVotingDuration = 7 days; // 1 weeks;
+    uint256 public initialVotingDuration = 100; // 7 days; // 1 weeks;
     uint256 public paymentInterval;
     uint120 public defaultPermilleThreshold = 500;  // 50 percent
     uint256 public payoutRep = 100 * (10 ** 18);

@@ -45,8 +45,7 @@ async function deployAll() {
   USDCoin = await TestPaymentTokenFactory.connect(SIGNERS.BOB).deploy("Circle USD", "USDC"); 
   await USDCoin.deployed()
   console.log("The address of " + contractName + " is " + USDCoin.address)
-  // console.log("The gas used: " + Object.keys(tx))
-  // Deploy ClientProjectFactory 
+  //
 
   contractName = "ClientProjectFactory"
   ClientProjectFactoryFactory = await ethers.getContractFactory(contractName);
@@ -71,7 +70,8 @@ async function deployAll() {
 
   // Deploy Source 
   let initialMembers = [SIGNERS.ALICE.address, SIGNERS.BOB.address, SIGNERS.CHARLIE.address]
-  let initialRep = [1000, 1000, 1000] 
+  let initialRepPerHolder = ethers.BigNumber.from("1000000000000000000")
+  let initialRep = [initialRepPerHolder.mul(100), initialRepPerHolder.mul(100), initialRepPerHolder.mul(100)] 
   contractName = "Source"
   SourceFactory = await ethers.getContractFactory(contractName);
   source = await SourceFactory.connect(SIGNERS.BOB).deploy(
@@ -81,6 +81,8 @@ async function deployAll() {
   await source.deployed()
   console.log("The address of " + contractName + " is " + source.address)
 
+  let repAddress = await source.repToken();
+  console.log("The Reptoken address is: ", repAddress)
   // add DeploymentFactories
   tx = await source.setDeploymentFactories(
     clientProjectFactory.address,
@@ -104,6 +106,7 @@ async function deployAll() {
   let defaultPaymentToken = await source.defaultPaymentToken()
   console.log("The source contracts default paymentToken is " + defaultPaymentToken + ".\nThe dummy USDC token is at " + USDCoin.address)
  
+
   // create Project
 
   // add PaymentToken
