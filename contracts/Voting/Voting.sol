@@ -30,17 +30,18 @@ contract Voting {
     mapping(address=>mapping(uint256=>mapping(address=>bool))) public alreadyVoted;
 
     function start(uint8 _votingType, uint40 _deadline, uint120 _threshold, uint120 _totalAmount) external returns(uint256) {
-        polls[msg.sender] += 1;
-        voteInfo[msg.sender][polls[msg.sender]] = Info({
-            votingType: Type(_votingType),
-            votingStatus: Status.active,
-            deadline: _deadline,
-            threshold: _threshold,
-            votesFor: 0,
-            votesAgainst: 0,
-            totalAmount: _totalAmount,
-            nominee: address(0x0)});
-        return polls[msg.sender];
+        // polls[msg.sender] += 1;
+        // voteInfo[msg.sender][polls[msg.sender]] = Info({
+        //     votingType: Type(_votingType),
+        //     votingStatus: Status.active,
+        //     deadline: _deadline,
+        //     threshold: _threshold,
+        //     votesFor: 0,
+        //     votesAgainst: 0,
+        //     totalAmount: _totalAmount,
+        //     nominee: address(0x0)});
+        // return polls[msg.sender];
+        return 0;
     }
 
     function _vote(uint256 poll_id, address votedOn, uint256 amount) 

@@ -260,8 +260,9 @@ contract ClientProject{
     /* ========== PROJECT HANDLING ========== */
 
     function startProject() external {
+        require(status == ProjectStatus.inactive, "not allowed to change status");
         // is there enough money in escrow and project deposited by client?
-
+        status = ProjectStatus.active;
     }
 
     function addMilestone(bytes32 requirementsCid) public {

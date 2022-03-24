@@ -20,7 +20,7 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
  */
 module.exports = {
   solidity: "0.8.7",
-  defaultNetwork: "rinkeby",
+  defaultNetwork: "localhost",
   networks:{
     localhost: {
       url: "http://127.0.0.1:8545"

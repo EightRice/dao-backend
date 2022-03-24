@@ -29,7 +29,8 @@ contract Source {  // maybe ERC1820
                  resetPaymentTimer,
                  liquidateInternalProject,
                  migrateDORG,
-                 migrateRepToken}
+                 migrateRepToken,
+                 changeInitialVotingDuration}
                  
     struct Poll {
         MotionType motionType;
@@ -63,11 +64,11 @@ contract Source {  // maybe ERC1820
     uint256 public numberOfProjects;
     mapping(address=>bool) _isProject;
 
-    uint256 public initialVotingDuration = 100; // 7 days; // 1 weeks;
+    uint256 public initialVotingDuration = 12; // 7 days; // 1 weeks;
     uint256 public paymentInterval;
     uint120 public defaultPermilleThreshold = 500;  // 50 percent
     uint256 public payoutRep = 100 * (10 ** 18);
-    uint40 public defaultVotingDuration = uint40(10 days);
+    uint40 public defaultVotingDuration = uint40(50);
 
     /* ========== EVENTS ========== */
 
@@ -79,18 +80,15 @@ contract Source {  // maybe ERC1820
     constructor (address votingContract,
                  address[] memory initialMembers,
                  uint256[] memory initialRep){
-        deprecated = false;
+        
         repToken = IRepToken(address(new RepToken("DORG", "DORG")));
-        dOrgFactory = IdOrgFactory(msg.sender);
         voting = IVoting(votingContract);
         _importMembers(initialMembers, initialRep);
         arbitrationEscrow = new ArbitrationEscrow();
 
-        // either at construction or after set default paymentToken
+        // // either at construction or after set default paymentToken
         paymentTokens.push(address(0x0));
 
-        // actually set this with DAO vote
-        // setDefaultPaymentToken(paymentToken);
 
         startPaymentTimer = block.timestamp;
     }
@@ -216,7 +214,13 @@ contract Source {  // maybe ERC1820
         
     }
 
-
+    function changeInitialVotingDuration(uint160 _votingDuration)
+    external
+    voteOnMotion(7, address(_votingDuration)){
+        // DAO Vote: The MotionId is 4
+        // address unconvertedDuration = voting.getElected(currentPoll[7].index);
+        // initialVotingDuration = uint256(uint160(unconvertedDuration));
+    }
 
     function liquidateInternalProject(address _project)
     external 
@@ -229,7 +233,7 @@ contract Source {  // maybe ERC1820
     external
     voteOnMotion(2, address(duration)){        
         // DAO Vote: The MotionId is 2
-        address unconvertedDuration = voting.getElected(currentPoll[0].index);
+        address unconvertedDuration = voting.getElected(currentPoll[2].index);
         paymentInterval = uint256(uint160(unconvertedDuration));
     }
 
@@ -307,7 +311,7 @@ contract Source {  // maybe ERC1820
     }
 
     modifier requiredRep() {
-        require(repToken.balanceOf(msg.sender)>0);
+        require(repToken.balanceOf(msg.sender)>0, "Caller has no Rep");
         _;
     }
 
@@ -324,23 +328,25 @@ contract Source {  // maybe ERC1820
     modifier voteOnMotion(uint8 _motion, address _address) {
         // Motion motion = Motion.setDefaultPaymentToken;
         // Motion is 0
-        require(voting.getStatus(currentPoll[_motion].index) <= 1, "inactive or active");
-        if (voting.getStatus(currentPoll[_motion].index) == 0){
+        require(voting.getStatus(currentPoll[_motion].index) <= uint8(1), "inactive or active");
+        if (voting.getStatus(currentPoll[_motion].index) == uint8(0)){
             // TODO!! If one changes the enum in Voting to include other statuses then
             // one should maybe not use the exclusion here.
-            currentPoll[_motion].index = voting.start(4, defaultVotingDuration, defaultPermilleThreshold, uint120(repToken.totalSupply()));
+            // currentPoll[_motion].index = voting.start(uint8(4), uint40(defaultVotingDuration), uint120(defaultPermilleThreshold), uint120(repToken.totalSupply()));
         }
 
-        voting.safeVoteReturnStatus(
-            currentPoll[0].index,
-            msg.sender,
-            _address,
-            uint128(repToken.balanceOf(msg.sender)));
+        _;
 
-        if (voting.getStatus(currentPoll[_motion].index) == 2){
-            _;
-            // reset status to inactive, so that polls can take place again.
-        }
+        // voting.safeVoteReturnStatus(
+        //     currentPoll[0].index,
+        //     msg.sender,
+        //     _address,
+        //     uint128(repToken.balanceOf(msg.sender)));
+
+        // if (voting.getStatus(currentPoll[_motion].index) == 2){
+        //     _;
+        //     // reset status to inactive, so that polls can take place again.
+        // }
     }
 
     /* ========== MIGRATION ========== */
