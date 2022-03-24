@@ -8,7 +8,6 @@ import "../Arbitration/Arbitration.sol";
 import "../DAO/IDAO.sol";
 import "../Voting/IVoting.sol";
 
-
 /// @title Main Project contract
 /// @author dOrg
 /// @dev Experimental status
@@ -37,7 +36,7 @@ contract ClientProject{
         bool approved;
         bool inDispute;
         uint256 requestedAmount;
-        bytes32 requirementsCid;
+        string requirementsCid;
         uint256 payrollVetoDeadline;
         address payable[] payees;
         uint256[] payments;
@@ -50,13 +49,12 @@ contract ClientProject{
     }
 
     /* ========== VOTING VARIABLES ========== */
-
     ProjectStatus public status;
     CurrentVoteId public currentVoteId;
     uint256 public votes_pro;
     uint256 public votes_against;
     uint256 public votingDuration;  // in seconds (1 day = 86400)
-    uint256 public vetoDurationForPayments = 4 * 86400 ;// in seconds
+    uint256 public vetoDurationForPayments = 600 ;// in seconds
     uint256 public startingTime;
     uint256 public approvalAmount;
     
@@ -70,14 +68,12 @@ contract ClientProject{
     mapping (address=>mapping(address=>uint256)) public votesForNewSourcingLead;
     mapping (address=>mapping(address=>bool)) public alreadyVotedForNewSourcingLead;
     
-    
     /* ========== ROLES ========== */
 
     address payable public client;
     address payable public sourcingLead;
     address payable public arbiter;
     address payable[] team;
-
 
     /* ========== PAYMENT ========== */
 
@@ -164,7 +160,7 @@ contract ClientProject{
     }
 
 
-    function registerVote() external {
+    function registerVote() public {
         require(block.timestamp - startingTime > votingDuration, "Voting is still ongoing");
         _registerVote();
     }
@@ -218,10 +214,6 @@ contract ClientProject{
         require(excludeMember[msg.sender][_teamMember] == false && sourcingLead!=_teamMember);
         excludeMember[msg.sender][_teamMember] = true;
         voteToExclude[_teamMember] += 1;
-
-        
-
-
         if (voteToExclude[_teamMember]> (team.length * exclusionThreshold ) / 100){
             _isTeamMember[_teamMember]= false;
             // TODO: add these to the motions, once it passes
@@ -254,29 +246,32 @@ contract ClientProject{
         sourcingLead = payable(msg.sender);
         // reset all the votes maybe.
     }
-        
 
 
     /* ========== PROJECT HANDLING ========== */
 
     function startProject() external {
         // is there enough money in escrow and project deposited by client?
-
     }
 
-    function addMilestone(bytes32 requirementsCid) public {
+
+    function addMilestone(string memory _requirementsCid) public {
         require(msg.sender == sourcingLead,"Only the sourcing lead can add milestones");
+        require(block.timestamp - startingTime > votingDuration, "Voting is still ongoing");
+        if (status==ProjectStatus.proposal){registerVote();}
+        if (status==ProjectStatus.inactive){
         address payable[] memory NoPayees;
         uint256[] memory NoPayments;
         milestones.push(Milestone({
             approved: false,
             inDispute: false,
             requestedAmount: 0,
-            requirementsCid: requirementsCid,
+            requirementsCid: _requirementsCid,
             payrollVetoDeadline: 0,
             payees: NoPayees,
             payments: NoPayments
         }));
+        }
     }
 
     function addAmountToMilestone(uint256 milestoneIndex, uint256 amount) public {
@@ -318,7 +313,6 @@ contract ClientProject{
     function invoiceClient(uint256 _amount) public {
          //the sourcingLead can claim the milestone
         require(msg.sender==sourcingLead);
-        
         outstandingInvoice=_amount;
     }
 
