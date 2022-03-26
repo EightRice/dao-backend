@@ -12,9 +12,6 @@ import "../Factory/IInternalProjectFactory.sol";
 import "../Factory/IdOrgFactory.sol";
 
 
-
-
-
 /// @title Main DAO contract
 /// @author dOrg
 /// @dev Experimental status
@@ -62,7 +59,6 @@ contract Source {  // maybe ERC1820
     address[] public internalProjects;
     uint256 public numberOfProjects;
     mapping(address=>bool) _isProject;
-
     uint256 public initialVotingDuration = 300;
     uint256 public paymentInterval;
     uint120 public defaultPermilleThreshold = 500;  // 50 percent
