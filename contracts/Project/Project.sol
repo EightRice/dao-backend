@@ -53,7 +53,7 @@ contract ClientProject{
     uint256 public votes_pro;
     uint256 public votes_against;
     uint256 public votingDuration;  // in seconds (1 day = 86400)
-    uint256 public vetoDurationForPayments = 600 ;// in seconds
+    uint256 public vetoDurationForPayments = 300 ;// in seconds
     uint256 public startingTime;    
     
     // TODO: Discuss in dOrg
@@ -322,7 +322,7 @@ contract ClientProject{
         require(milestones[milestoneIndex].approved);
         // NOTE; Might be issues with calculating the 10 % percent of the other splits
         uint256 tenpercent=((milestones[milestoneIndex].requestedAmount * 1000) / 10000);
-        paymentToken.transfer(address(source), tenpercent); 
+        paymentToken.transfer(address(source), tenpercent);
     }
 
     function batchPayout (uint256 milestoneIndex) external {
