@@ -12,9 +12,6 @@ import "../Factory/IInternalProjectFactory.sol";
 import "../Factory/IdOrgFactory.sol";
 
 
-
-
-
 /// @title Main DAO contract
 /// @author dOrg
 /// @dev Experimental status
@@ -64,7 +61,7 @@ contract Source {  // maybe ERC1820
     uint256 public numberOfProjects;
     mapping(address=>bool) _isProject;
 
-    uint256 public initialVotingDuration = 12; // 7 days; // 1 weeks;
+    uint256 public initialVotingDuration = 12; //  change to 300 s for demo; // 1 weeks;
     uint256 public paymentInterval;
     uint120 public defaultPermilleThreshold = 500;  // 50 percent
     uint256 public payoutRep = 100 * (10 ** 18);
@@ -214,9 +211,11 @@ contract Source {  // maybe ERC1820
         
     }
 
-    function changeInitialVotingDuration(uint160 _votingDuration)
+    function changeInitialVotingDuration(uint256 _votingDuration)
     external
-    voteOnMotion(7, address(_votingDuration)){
+    onlyOnce
+    {
+        initialVotingDuration = _votingDuration;
         // DAO Vote: The MotionId is 4
         // address unconvertedDuration = voting.getElected(currentPoll[7].index);
         // initialVotingDuration = uint256(uint160(unconvertedDuration));
@@ -318,6 +317,13 @@ contract Source {  // maybe ERC1820
     modifier onlyProject() {
         require(_isProject[msg.sender]);
         _;
+    }
+
+    bool internal onlyOneCallFlag = false;
+    modifier onlyOnce() {
+        require(onlyOneCallFlag == false);
+        _;
+        onlyOneCallFlag = true;
     }
 
     modifier isEligibleToken(address _tokenAddres){

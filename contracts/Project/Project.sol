@@ -8,13 +8,11 @@ import "../Arbitration/Arbitration.sol";
 import "../DAO/IDAO.sol";
 import "../Voting/IVoting.sol";
 
-
 /// @title Main Project contract
 /// @author dOrg
 /// @dev Experimental status
 /// @custom:experimental This is an experimental contract.
 contract ClientProject{
-
     /* ========== CONTRACT VARIABLES ========== */
 
     ISource public source;
@@ -32,12 +30,12 @@ contract ClientProject{
         uint16 numberOfApprovals;         
     }
 
-
     struct Milestone {
         bool approved;
         bool inDispute;
         uint256 requestedAmount;
-        bytes32 requirementsCid;
+        string requirementsCid;
+        uint256 index;
         uint256 payrollVetoDeadline;
         address payable[] payees;
         uint256[] payments;
@@ -50,15 +48,13 @@ contract ClientProject{
     }
 
     /* ========== VOTING VARIABLES ========== */
-
     ProjectStatus public status;
     CurrentVoteId public currentVoteId;
     uint256 public votes_pro;
     uint256 public votes_against;
     uint256 public votingDuration;  // in seconds (1 day = 86400)
-    uint256 public vetoDurationForPayments = 4 * 86400 ;// in seconds
-    uint256 public startingTime;
-    uint256 public approvalAmount;
+    uint256 public vetoDurationForPayments = 300 ;// in seconds
+    uint256 public startingTime;    
     
     // TODO: Discuss in dOrg
     uint256 public defaultThreshold = 500;  // in permille
@@ -69,19 +65,14 @@ contract ClientProject{
     mapping(address=>uint16) public voteToExclude;
     mapping (address=>mapping(address=>uint256)) public votesForNewSourcingLead;
     mapping (address=>mapping(address=>bool)) public alreadyVotedForNewSourcingLead;
-    
-    
     /* ========== ROLES ========== */
 
     address payable public client;
     address payable public sourcingLead;
     address payable public arbiter;
-    address payable[] team;
-
-
+    address payable[] public team;
     /* ========== PAYMENT ========== */
-
-    uint256 public outstandingInvoice = 0;
+    
     uint256 public repWeiPerPaymentGwei = 10**9;  // 10**9; for stablecoin
     // You earn one WETH, then how many reptokens you get?
     // (10**18) * (repToPaymentRatio) / (10 ** 9)
@@ -109,6 +100,10 @@ contract ClientProject{
 
     Milestone[] public milestones;  // holds all the milestones of the project
     
+    function numberOfMilestones() public view returns (uint256){
+        return milestones.length;
+    }
+
     /* ========== EVENTS ========== */
 
     event MilestoneApproved(uint256 milestoneIndex, uint256 approvedAmount);
@@ -164,7 +159,7 @@ contract ClientProject{
     }
 
 
-    function registerVote() external {
+    function registerVote() public {
         require(block.timestamp - startingTime > votingDuration, "Voting is still ongoing");
         _registerVote();
     }
@@ -188,7 +183,6 @@ contract ClientProject{
         uint256 [] memory NoPayments;
         milestones[milestoneIndex].payments = NoPayments;  // TODO: think about storage 
     }
-
 
     /* ========== REPUTATION ========== */
 
@@ -218,10 +212,6 @@ contract ClientProject{
         require(excludeMember[msg.sender][_teamMember] == false && sourcingLead!=_teamMember);
         excludeMember[msg.sender][_teamMember] = true;
         voteToExclude[_teamMember] += 1;
-
-        
-
-
         if (voteToExclude[_teamMember]> (team.length * exclusionThreshold ) / 100){
             _isTeamMember[_teamMember]= false;
             // TODO: add these to the motions, once it passes
@@ -254,27 +244,33 @@ contract ClientProject{
         sourcingLead = payable(msg.sender);
         // reset all the votes maybe.
     }
-        
 
 
     /* ========== PROJECT HANDLING ========== */
 
-    function startProject() external {
+    function startProject() external{
+        require(msg.sender==sourcingLead, "only Sourcing Lead");
         require(status == ProjectStatus.inactive, "not allowed to change status");
         // is there enough money in escrow and project deposited by client?
         status = ProjectStatus.active;
     }
 
-    function addMilestone(bytes32 requirementsCid) public {
+
+    function addMilestone(string memory _requirementsCid) public {
         require(msg.sender == sourcingLead,"Only the sourcing lead can add milestones");
+        require(block.timestamp - startingTime > votingDuration, "Voting is still ongoing");
+        if (status==ProjectStatus.proposal){registerVote();}
         address payable[] memory NoPayees;
         uint256[] memory NoPayments;
+        uint256 _index=0;
+        if (milestones.length>0){ _index=milestones.length-1;}
         milestones.push(Milestone({
             approved: false,
             inDispute: false,
             requestedAmount: 0,
-            requirementsCid: requirementsCid,
+            requirementsCid: _requirementsCid,
             payrollVetoDeadline: 0,
+            index: _index,
             payees: NoPayees,
             payments: NoPayments
         }));
@@ -316,51 +312,37 @@ contract ClientProject{
     }
 
     // dev A doesnt withdraw --> then the con 
-    function invoiceClient(uint256 _amount) public {
-         //the sourcingLead can claim the milestone
-        require(msg.sender==sourcingLead);
-        
-        outstandingInvoice=_amount;
-    }
-
-
-
-    function submitPayrollRoster(uint256 milestoneIndex, address[] memory payees, uint256[] memory amounts) external {
-        require(msg.sender==sourcingLead && payees.length == amounts.length);
+    function submitPayrollRoster(uint256 milestoneIndex, address payable [] memory _payees, uint256[] memory _amounts) external {
+        require(msg.sender==sourcingLead && _payees.length == _amounts.length);
         milestones[milestoneIndex].payrollVetoDeadline = block.timestamp + vetoDurationForPayments;
+        milestones[milestoneIndex].payees=_payees;
+        milestones[milestoneIndex].payments=_amounts;
         emit PayrollRosterSubmitted(milestoneIndex);  // maybe milestones[milestoneIndex].payrollVetoDeadline
     }
-
 
     function _releaseMilestoneFunds(uint256 milestoneIndex) internal {
         // client approves milestone, i.e. approve payment to the developer
         require(milestones[milestoneIndex].approved);
-
         // NOTE; Might be issues with calculating the 10 % percent of the other splits
         uint256 tenpercent=((milestones[milestoneIndex].requestedAmount * 1000) / 10000);
-        paymentToken.transfer(address(source), tenpercent); 
-
+        paymentToken.transfer(address(source), tenpercent);
     }
 
-   function batchPayout (uint256 milestoneIndex) external {
+    function batchPayout (uint256 milestoneIndex) external {
         require(milestones[milestoneIndex].approved);
-        
         require(block.timestamp > milestones[milestoneIndex].payrollVetoDeadline);
         for (uint i=0; i< milestones[milestoneIndex].payees.length; i++){
             paymentToken.transfer(milestones[milestoneIndex].payees[i], milestones[milestoneIndex].payments[i]);
             source.mintRepTokens(milestones[milestoneIndex].payees[i], milestones[milestoneIndex].payments[i]);
-            // _repAmount = _amount * repWeiPerPaymentGwei / (10 ** 9);
-            
+            // _repAmount = _amount * repWeiPerPaymentGwei / (10 ** 9); 
         }
     }
-
     /* ========== DISPUTE ========== */
 
     function dispute(uint256[] memory milestoneIndices) external {
         require(msg.sender == client || msg.sender==sourcingLead );
         for (uint256 j=0; j<milestoneIndices.length; j++){
             milestones[milestoneIndices[j]].inDispute = true;
-            
             // emit Disputed(msg.sender, milestoneIndices[j]);
         }
         status = ProjectStatus.inDispute;
@@ -371,7 +353,7 @@ contract ClientProject{
     function arbitration(bool forInvoice)public{
         require(msg.sender == arbiter && status==ProjectStatus.inDispute);
         if (forInvoice){
-            approvalAmount = outstandingInvoice;
+            // approvalAmount = outstandingInvoice;
             for (uint256 j=0; j<milestones.length; j++){
                 // Maybe could be more cost efficient in future implementation
                 if (milestones[j].inDispute){
@@ -384,11 +366,7 @@ contract ClientProject{
         }
         // client gets entire funds of the project
         _returnFundsToClient(paymentToken.balanceOf(address(this)));
-
         // what happens to the project?
         status = ProjectStatus.active;  
     }
-
-
-
 }

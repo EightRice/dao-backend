@@ -1,11 +1,10 @@
 require("@nomiclabs/hardhat-waffle");
-require('dotenv').config()
+require('dotenv').config();
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
 task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   const accounts = await hre.ethers.getSigners();
-
   for (const account of accounts) {
     console.log(account.address);
   }
@@ -23,11 +22,11 @@ module.exports = {
   defaultNetwork: "localhost",
   networks:{
     localhost: {
-      url: "http://127.0.0.1:8545"
+      url: "HTTP://127.0.0.1:7545"
     },
     rinkeby: {
-      url: process.env["RINKEBY_RPC_ENDPOINT_INFURA"],
-      accounts: [process.env["ALICE_PRIVATEKEY"], process.env["BOB_PRIVATEKEY"], process.env["CHARLIE_PRIVATEKEY"]]
+      url: process.env["rinkebyurl"],
+      accounts: [process.env["alicepk"], process.env["bobpk"], process.env["sampk"]]
     },
     hardhat: {
       mining: {
