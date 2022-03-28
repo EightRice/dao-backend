@@ -259,7 +259,7 @@ contract ClientProject{
     function addMilestone(string memory _requirementsCid) public {
         require(msg.sender == sourcingLead,"Only the sourcing lead can add milestones");
         require(block.timestamp - startingTime > votingDuration, "Voting is still ongoing");
-        if (status==ProjectStatus.proposal){registerVote();}
+        if (status==ProjectStatus.proposal){_registerVote();}
         address payable[] memory NoPayees;
         uint256[] memory NoPayments;
         uint256 _index=0;

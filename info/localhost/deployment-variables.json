@@ -1,0 +1,42 @@
+{
+  "0x27BC8fe8C839Dbe3557496fca344aA1e7D73bd73": {
+    "name": "PaymentToken",
+    "variables": [
+      "\"Mock DAI\"",
+      "\"DAI\""
+    ]
+  },
+  "0x13a12F5f5C1961b75b1872D5bD2B3b4367d7E421": {
+    "name": "ClientProjectFactory",
+    "variables": []
+  },
+  "0xE022c2f438f4F69D89C0b56bE486d361dE617a35": {
+    "name": "InternalProjectFactory",
+    "variables": []
+  },
+  "0xc9ef62865B0707a6d8fcEBb9E17B718eC6C06547": {
+    "name": "Voting",
+    "variables": []
+  },
+  "0xaD443396878F6f990a6e8D1a7249c9318bff0418": {
+    "name": "Source",
+    "variables": [
+      "\"0xc9ef62865B0707a6d8fcEBb9E17B718eC6C06547\""
+    ]
+  },
+  "0x8249B527071EA1FDcF3F6666c45ac66175be5078": {
+    "name": "RepToken",
+    "variables": [
+      "\"DORG\"",
+      "\"DORG\""
+    ]
+  },
+  "0xEe34B6b84FE86e94D70f16ccC15B20e0F4676f03": {
+    "name": "ClientProject",
+    "variables": [
+      "\"0x21ce0c2a2e93598D4B5C9D2063a83846Ee1296AE\"",
+      "\"0xBe0b5E62952b110e92a8C67baD4FBe5321C7d678\"",
+      "\"0x27BC8fe8C839Dbe3557496fca344aA1e7D73bd73\""
+    ]
+  }
+}

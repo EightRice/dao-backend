@@ -51,6 +51,7 @@ contract Source {  // maybe ERC1820
     mapping(uint8 => Poll) public currentPoll;
 
     uint256 public startPaymentTimer;
+    address internal deployer;
     // TODO: SET INITIAL PAYMENT TIMER!!!
 
     address[] public paymentTokens;
@@ -61,7 +62,7 @@ contract Source {  // maybe ERC1820
     uint256 public numberOfProjects;
     mapping(address=>bool) _isProject;
 
-    uint256 public initialVotingDuration = 12; //  change to 300 s for demo; // 1 weeks;
+    uint256 public initialVotingDuration = 300; //  change to 300 s for demo; // 1 weeks;
     uint256 public paymentInterval;
     uint120 public defaultPermilleThreshold = 500;  // 50 percent
     uint256 public payoutRep = 100 * (10 ** 18);
@@ -74,13 +75,11 @@ contract Source {  // maybe ERC1820
     event Payment(uint256 amount, uint256 repAmount);
 
     /* ========== CONSTRUCTOR ========== */
-    constructor (address votingContract,
-                 address[] memory initialMembers,
-                 uint256[] memory initialRep){
+    constructor (address votingContract){
         
         repToken = IRepToken(address(new RepToken("DORG", "DORG")));
         voting = IVoting(votingContract);
-        _importMembers(initialMembers, initialRep);
+        // _importMembers(initialMembers, initialRep);
         arbitrationEscrow = new ArbitrationEscrow();
 
         // // either at construction or after set default paymentToken
@@ -88,6 +87,14 @@ contract Source {  // maybe ERC1820
 
 
         startPaymentTimer = block.timestamp;
+        deployer = msg.sender;
+    }
+
+    function importMembers(address[] memory initialMembers,uint256[] memory initialRep)
+    external
+    {
+        require(msg.sender==deployer, "Only after Deployment");
+        _importMembers(initialMembers, initialRep);
     }
 
 
@@ -213,8 +220,7 @@ contract Source {  // maybe ERC1820
 
     function changeInitialVotingDuration(uint256 _votingDuration)
     external
-    onlyOnce
-    {
+    onlyTwice {  // FIXME Need to change the modifier!! Or rather adapt the new voting interaction.
         initialVotingDuration = _votingDuration;
         // DAO Vote: The MotionId is 4
         // address unconvertedDuration = voting.getElected(currentPoll[7].index);
@@ -319,11 +325,11 @@ contract Source {  // maybe ERC1820
         _;
     }
 
-    bool internal onlyOneCallFlag = false;
-    modifier onlyOnce() {
-        require(onlyOneCallFlag == false);
+    uint8 internal onlyTwoCallsFlag = 0;
+    modifier onlyTwice() {
+        require(onlyTwoCallsFlag < 2);
         _;
-        onlyOneCallFlag = true;
+        onlyTwoCallsFlag += 1;
     }
 
     modifier isEligibleToken(address _tokenAddres){

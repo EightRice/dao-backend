@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "node test/test.js",
-    "compile": "npx hardhat compile"
+    "compile": "npx hardhat compile",
+    "getGanache": "node scripts/getGanache.js",
+    "deploy": "node scripts/deploy.js",
+    "verify": "node scripts/verify.js"
   },
   "repository": {
     "type": "git",
@@ -27,10 +30,15 @@
   },
   "homepage": "https://github.com/dOrgTech/daoification#readme",
   "dependencies": {
+    "@nomiclabs/hardhat-etherscan": "^3.0.3",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
     "@openzeppelin/contracts": "^4.4.2",
+    "child_process": "^1.0.2",
+    "csv-parse": "^5.0.4",
+    "csv-parser": "^3.0.0",
     "dotenv": "^11.0.0",
     "ethers": "^5.5.3",
-    "hardhat": "^2.9.1"
+    "hardhat": "^2.9.1",
+    "util": "^0.12.4"
   }
 }
