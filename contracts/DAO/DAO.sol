@@ -15,7 +15,7 @@ import "../Factory/IdOrgFactory.sol";
 /// @author dOrg
 /// @dev Experimental status
 /// @custom:experimental This is an experimental contract.
-contract Source {  // maybe ERC1820
+contract Source is Poll, GasRefunds, HandlesRepToken, DAOMembership, DAOPaymentCycle, DAOPaymentTokens {  // maybe ERC1820
     
     bool public deprecated;
     
