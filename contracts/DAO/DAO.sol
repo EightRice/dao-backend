@@ -59,6 +59,7 @@ contract Source {  // maybe ERC1820
     mapping(address => uint256) public _paymentTokenIndex;
     address[] public clientProjects;
     address[] public internalProjects;
+    uint256 public numberOfDepartments;
     uint256 public numberOfProjects;
     mapping(address=>bool) _isProject;
 
@@ -97,7 +98,6 @@ contract Source {  // maybe ERC1820
         _importMembers(initialMembers, initialRep);
     }
 
-
     function _importMembers(address[] memory initialMembers,uint256[] memory initialRep) internal{
         // only once!
         require(initialMembers.length==initialRep.length);
@@ -105,14 +105,11 @@ contract Source {  // maybe ERC1820
             repToken.mint(initialMembers[i], initialRep[i]);
         }
     }
-    
-
 
     function setDeploymentFactories(address _clientProjectFactory, address _internalProjectFactory) external {
         // require(false, " requires DAO VOTE. To be implemented");
         clientProjectFactory = IClientProjectFactory(_clientProjectFactory);
         internalProjectFactory = IInternalProjectFactory(_internalProjectFactory);
-
     }
     
     
@@ -154,7 +151,7 @@ contract Source {  // maybe ERC1820
 
         internalProjects.push(address(projectAddress));
         _isProject[address(projectAddress)] = true;
-        numberOfProjects += 1;
+        numberOfDepartments += 1;
     }
 
 
