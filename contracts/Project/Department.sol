@@ -50,8 +50,6 @@ contract InternalProject {
 
     address payable[] team;
     mapping(address=>bool) _isTeamMember;
-    mapping(address=>uint256) public funds;
-    address[] public registeredPaymentTokens;
     address payable public teamLead;
 
     uint256 MILLE = 1000;
@@ -67,21 +65,17 @@ contract InternalProject {
                 address _votingAddress,
                 uint256 _votingDuration,
                 uint256 _paymentInterval,
-                uint256[] memory _requestedAmounts,
-                address[] memory _requestedTokenAddresses){
+                uint256 _requestedAmounts){
                     
-        require(_requestedAmounts.length==_requestedTokenAddresses.length);
         paymentInterval = _paymentInterval;
-        for (uint256 i; i<_requestedAmounts.length; i++){
-            funds[_requestedTokenAddresses[i]] = _requestedAmounts[i];
-        }
-        registeredPaymentTokens = _requestedTokenAddresses;
+        remainingFunds = _requestedAmounts;
+        allowedSpendingsPerPaymentCycle = _requestedAmounts;
+
         status = ProjectStatus.proposal;
         teamLead = _teamLead;
         team.push(teamLead);
         _isTeamMember[teamLead] = true;
         source = ISource(_sourceAddress);
-        repToken = IRepToken(_requestedTokenAddresses[0]);
         startingTime = block.timestamp;
         votingDuration = _votingDuration;
         voting = IVoting(_votingAddress);

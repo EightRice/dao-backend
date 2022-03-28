@@ -5,13 +5,11 @@ import "../Project/Department.sol";
 
 contract InternalProjectFactory{
 
-
     function createInternalProject(address payable _teamLead,
                                    address _votingAddress,
                                    uint256 _votingDuration,
                                    uint256 _paymentInterval,
-                                   uint256[] memory _requestedAmounts,
-                                   address[] memory _requestedTokenAddresses) 
+                                   uint256 _requestedAmounts) 
     external
     returns(address)
     {
@@ -22,8 +20,7 @@ contract InternalProjectFactory{
                                 _votingAddress,
                                 _votingDuration,
                                 _paymentInterval,
-                                _requestedAmounts,
-                                _requestedTokenAddresses));
+                                _requestedAmounts));
     }
 
 }

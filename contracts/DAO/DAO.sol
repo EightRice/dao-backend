@@ -133,7 +133,7 @@ contract Source is Poll, GasRefunds, HandlesRepToken, DAOMembership, DAOPaymentC
     }
 
 
-    function createInternalProject(uint256[] memory _requestedAmounts, address[] memory _requestedTokenAddresses) 
+    function createInternalProject(_requestedAmounts) 
     external
     {
         require(!deprecated);
@@ -142,8 +142,7 @@ contract Source is Poll, GasRefunds, HandlesRepToken, DAOMembership, DAOPaymentC
                                 address(voting),
                                 initialVotingDuration,
                                 paymentInterval,
-                                _requestedAmounts,
-                                _requestedTokenAddresses);
+                                _requestedAmounts);
 
         internalProjects.push(address(projectAddress));
         _isProject[address(projectAddress)] = true;
