@@ -232,6 +232,11 @@ contract Source is Poll, GasRefunds, HandlesRepToken, DAOMembership, DAOPaymentC
     //     return voting.retrieve(pollIndex);
     // }
 
+    function getThisCyclesTotalRequested() view public returns(uint256 totalRequested) {
+        for (uint256 i=0; i < internalProjects.length; i++){
+            totalRequested += IInternalProject(internalProjects[i]).getThisCyclesRequestedAmount();
+        }
+    }
 
     function payout()
     external 
