@@ -10,6 +10,10 @@ import "../Factory/IClientProjectFactory.sol";
 import "../Factory/IInternalProjectFactory.sol";
 import "../Factory/IdOrgFactory.sol";
 
+import {Poll, PollStatus} from "../Voting/Poll.sol";
+import {DAOMembership} from "./Membership.sol";
+import {DAOPaymentTokens, DAOPaymentCycle} from "../Payment/DAOPayments.sol";
+import {GasRefunds} from "../Payment/GasRefunds.sol";
 
 /// @title Main DAO contract
 /// @author dOrg
@@ -292,24 +296,8 @@ contract Source is Poll, GasRefunds, HandlesRepToken, DAOMembership, DAOPaymentC
         
     }
 
-    modifier refundGas() {
-        uint256 _gasbefore = gasleft();
-        _;
-        // TODO: How can I not care about the return value something? I think the notaiton  is _, right?
-        uint256 refundAmount = (_gasbefore - gasleft()) * tx.gasprice;
-        (bool sent, bytes memory something) = payable(msg.sender).call{value: refundAmount}("");
-        emit Refunded(msg.sender, refundAmount, sent);
-    }
-
-    function _refundGas() internal {
-        // require(False)
-        // TODO: DOUBLE CHECK THIS REFUND
-        if (false){
-
-            uint256 roughGasAmountEstimate = 1000000;
-            payable(msg.sender).transfer(roughGasAmountEstimate * tx.gasprice);
-        }
-    }
+    
+    
 
     modifier requiredRep() {
         require(repToken.balanceOf(msg.sender)>0, "Caller has no Rep");
