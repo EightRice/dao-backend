@@ -296,7 +296,7 @@ contract Poll {
     }
 
     // currently the way that the Poll works is that it makes an external call to within the same contract (its more expensive, but this way we can track where voting implementation calls come from.)
-    function _isVoteImplementationCall() internal view returns(bool){
+    function getThisCyclesTotalRequested_isVoteImplementationCall() internal view returns(bool){
         return msg.sender == address(this);
     }
     
