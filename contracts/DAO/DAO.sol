@@ -2,7 +2,6 @@
 pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "../Token/IRepToken.sol";
 import "../Token/RepToken.sol";
 import "../Arbitration/Arbitration.sol";
 import "../Voting/IVoting.sol";
