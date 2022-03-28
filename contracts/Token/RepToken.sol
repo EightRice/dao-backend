@@ -4,8 +4,39 @@ pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 
+
+interface IRepToken {
+    function mint(address holder, uint256 amount) external;
+
+    function burn(address holder, uint256 amount) external;
+
+    /**
+     * @dev Returns the amount of tokens owned by `account`.
+     */
+    function balanceOf(address account) external view returns (uint256);
+
+    
+    /**
+     * @dev Moves `amount` tokens from the caller's account to `recipient`.
+     *
+     * Returns a boolean value indicating whether the operation succeeded.
+     *
+     * Emits a {Transfer} event.
+     */
+    function transfer(address recipient, uint256 amount) external returns (bool);
+
+        /**
+     * @dev Returns the amount of tokens in existence.
+     */
+    function totalSupply() external view returns (uint256);
+
+    function changeDAO(address newDAO) external;
+}
+
+
+
 contract RepToken is ERC20 {
-    address public source;
+    address public DAO;
     // add top 7 holders only for the case that transfers are disabled
 
     // mapping(address=>address) holderBelow;
@@ -13,7 +44,7 @@ contract RepToken is ERC20 {
     
     constructor(string memory name, string memory symbol) ERC20 (name, symbol)  {
         // _mint(msg.sender, initialSupply);
-        source = msg.sender;
+        DAO = msg.sender;
     }
 
 
@@ -29,10 +60,6 @@ contract RepToken is ERC20 {
 
     function mint(address holder, uint256 amount) external onlyDAO() {
         _mint(holder, amount);
-        // walk up until holderabove has more
-        // for (uint256 j=0; j<100; j++){
-        //     if (_balances[holder]
-        // }
         
     } 
 
@@ -40,8 +67,30 @@ contract RepToken is ERC20 {
         _burn(holder, amount);
     }
 
+    function changeDAO(address newDAO) external onlyDAO {
+        DAO = newDAO;
+    }
+
     modifier onlyDAO() {
-        require(msg.sender==source);
+        require(msg.sender==DAO);
         _;
+    }
+}
+
+
+
+contract HandlesRepToken {
+    IRepToken public repToken;
+}
+
+
+contract InitializeRepToken is HandlesRepToken{
+
+    constructor(
+        string memory DAO_name,
+        string memory DAO_symbol
+    ) {
+        address _repTokenAddress = address(new RepToken(DAO_name, DAO_symbol));
+        repToken = IRepToken(_repTokenAddress);
     }
 }
