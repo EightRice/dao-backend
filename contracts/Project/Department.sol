@@ -144,10 +144,11 @@ contract InternalProject {
     external 
     onlyProjectManager
     {
-        bool withinFirstSubmissionPeriod = block.timestamp <= dao.getFirstPayrollSubmissionDue();
-        bool withinSecondSubmissionPeriod = block.timestamp > dao.getVetoDue() && block.timestamp <= dao.getSecondPayrollSubmissionDue();
+        // bool withinFirstSubmissionPeriod = block.timestamp <= dao.getFirstPayrollSubmissionDue();
+        // bool withinSecondSubmissionPeriod = block.timestamp > dao.getVetoDue() && block.timestamp <= dao.getSecondPayrollSubmissionDue();
 
-        require(withinFirstSubmissionPeriod || withinSecondSubmissionPeriod);
+        // require(withinFirstSubmissionPeriod || withinSecondSubmissionPeriod);
+
         require(_payees.length == _amounts.length);
 
         
