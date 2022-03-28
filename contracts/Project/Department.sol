@@ -135,9 +135,6 @@ contract InternalProject {
         }
     }
 
-    uint256 _totalPaymentValueThisPayroll = 0;
-    uint256 _totalRepValueThisPayroll = 0;
-
 
 
 
