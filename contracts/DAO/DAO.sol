@@ -32,16 +32,11 @@ contract Source is Poll, GasRefunds, HandlesRepToken, DAOMembership, DAOPaymentC
                  migrateRepToken,
                  changeInitialVotingDuration}
                  
-    struct Poll {
-        MotionType motionType;
-        uint256 index;
-        address internalProjectAddress;
-    }
+    
 
     /* ========== CONTRACT VARIABLES ========== */
 
     IVoting public voting;
-    IRepToken public repToken;
     IRepToken public oldRepToken;
     ArbitrationEscrow public arbitrationEscrow;
     IClientProjectFactory public clientProjectFactory;
@@ -51,14 +46,12 @@ contract Source is Poll, GasRefunds, HandlesRepToken, DAOMembership, DAOPaymentC
     /* ========== LOCAL VARIABLES ========== */
     
     // maps Motion to Poll
-    mapping(uint8 => Poll) public currentPoll;
+    // mapping(uint8 => Poll) public currentPoll;
 
     uint256 public startPaymentTimer;
     address internal deployer;
     // TODO: SET INITIAL PAYMENT TIMER!!!
 
-    address[] public paymentTokens;
-    IERC20 public defaultPaymentToken;
     mapping(address => uint256) public _paymentTokenIndex;
     address[] public clientProjects;
     address[] public internalProjects;
@@ -75,7 +68,7 @@ contract Source is Poll, GasRefunds, HandlesRepToken, DAOMembership, DAOPaymentC
     /* ========== EVENTS ========== */
 
     event ProjectCreated(address _project);
-    event Refunded(address recipient, uint256 amount, bool successful);
+    // event Refunded(address recipient, uint256 amount, bool successful);
     event Payment(uint256 amount, uint256 repAmount);
 
     /* ========== CONSTRUCTOR ========== */
@@ -121,7 +114,7 @@ contract Source is Poll, GasRefunds, HandlesRepToken, DAOMembership, DAOPaymentC
 
     function createClientProject(address payable _client, address payable _arbiter, address paymentToken)
     public
-    isEligibleToken(paymentToken)
+    onlyRegisteredToken(paymentToken)
      {
         require(!deprecated);
         address projectAddress = clientProjectFactory.createClientProject(
@@ -171,34 +164,9 @@ contract Source is Poll, GasRefunds, HandlesRepToken, DAOMembership, DAOPaymentC
         repToken.mint(receiver, amount);
     }
 
-    // change default payment token.
-    // add new payment tokens.
-    function removePaymentToken(address _erc20TokenAddress) external {
-        // TODO: not everyone should be able to call this.
-        paymentTokens[_paymentTokenIndex[_erc20TokenAddress]] = address(0x0);
-        _paymentTokenIndex[_erc20TokenAddress] = 0;
-    }
-
-    function addPaymentToken(address _erc20TokenAddress) external requiredRep() {
-        require(_paymentTokenIndex[_erc20TokenAddress] == 0, "already exists");
-        paymentTokens.push(_erc20TokenAddress);
-        _paymentTokenIndex[_erc20TokenAddress] = paymentTokens.length - 1;
-    }
 
     
-    // TODO: Current attack vector with voting is that anyone can trigger a vote anytime
-    // and by current design there is only one vote per Motion at any time. So one could 
-    // congest the voting service (i.e. denial of service attack).
-    // Solution could be to add the index for the particular vote.
-    // TODO: Also currently options are encoded by different addresses
-    function setDefaultPaymentToken(address _erc20TokenAddress)
-    public 
-    isEligibleToken(_erc20TokenAddress)
-    {
-        // DAO Vote: The MotionId is 0
-        // address newPaymentTokenAddress = voting.getElected(currentPoll[0].index);
-        defaultPaymentToken = IERC20(_erc20TokenAddress);
-    }
+   
 
     function withdrawByProject(uint256 _amount) external onlyProject() {
         // TODO: A bit risky like this. 
@@ -227,46 +195,42 @@ contract Source is Poll, GasRefunds, HandlesRepToken, DAOMembership, DAOPaymentC
         // initialVotingDuration = uint256(uint160(unconvertedDuration));
     }
 
-    function liquidateInternalProject(address _project)
-    external 
-    voteOnMotion(4, _project){
-        // DAO Vote: The MotionId is 4
-        IInternalProject(_project).withdraw();
-    }
+    // function liquidateInternalProject(address _project)
+    // external 
+    // voteOnMotion(4, _project){
+    //     // DAO Vote: The MotionId is 4
+    //     IInternalProject(_project).withdraw();
+    // }
 
-    function changePaymentInterval(uint160 duration)
-    external
-    voteOnMotion(2, address(duration)){        
-        // DAO Vote: The MotionId is 2
-        address unconvertedDuration = voting.getElected(currentPoll[2].index);
-        paymentInterval = uint256(uint160(unconvertedDuration));
-    }
+    // function changePaymentInterval(uint160 duration)
+    // external
+    // voteOnMotion(2, address(duration)){        
+    //     // DAO Vote: The MotionId is 2
+    //     address unconvertedDuration = voting.getElected(currentPoll[2].index);
+    //     paymentInterval = uint256(uint160(unconvertedDuration));
+    // }
 
     
 
-    function resetPaymentTimer() 
-    external 
-    voteOnMotion(3, address(0x0)){        
-        // DAO Vote: The MotionId is 3
-        startPaymentTimer = block.timestamp;
-        // drawback that timer restarts when the majority is reached.
-        // which is a little bit unpredictable.
-        // But it will start before the end of defaultVotingDuration
-    }
+    // function resetPaymentTimer() 
+    // external 
+    // voteOnMotion(3, address(0x0)){        
+    //     // DAO Vote: The MotionId is 3
+    //     startPaymentTimer = block.timestamp;
+    //     // drawback that timer restarts when the majority is reached.
+    //     // which is a little bit unpredictable.
+    //     // But it will start before the end of defaultVotingDuration
+    // }
 
-    function getStartPaymentTimer() view external returns(uint256) {
-        return startPaymentTimer;
-    }
-    
 
 
     // make sure no funds are locked in the departments!
     // TODO!!! Change default at each project.
-    function getPollStatus(uint256 pollIndex) external view
-    returns(uint8, uint40, uint256, uint256, address)
-    {
-        return voting.retrieve(pollIndex);
-    }
+    // function getPollStatus(uint256 pollIndex) external view
+    // returns(uint8, uint40, uint256, uint256, address)
+    // {
+    //     return voting.retrieve(pollIndex);
+    // }
 
 
     
@@ -316,63 +280,59 @@ contract Source is Poll, GasRefunds, HandlesRepToken, DAOMembership, DAOPaymentC
         onlyTwoCallsFlag += 1;
     }
 
-    modifier isEligibleToken(address _tokenAddres){
-        require(_paymentTokenIndex[_tokenAddres]>0);
-        _;
-    }
 
-    modifier voteOnMotion(uint8 _motion, address _address) {
-        // Motion motion = Motion.setDefaultPaymentToken;
-        // Motion is 0
-        require(voting.getStatus(currentPoll[_motion].index) <= uint8(1), "inactive or active");
-        if (voting.getStatus(currentPoll[_motion].index) == uint8(0)){
-            // TODO!! If one changes the enum in Voting to include other statuses then
-            // one should maybe not use the exclusion here.
-            // currentPoll[_motion].index = voting.start(uint8(4), uint40(defaultVotingDuration), uint120(defaultPermilleThreshold), uint120(repToken.totalSupply()));
-        }
+    // modifier voteOnMotion(uint8 _motion, address _address) {
+    //     // Motion motion = Motion.setDefaultPaymentToken;
+    //     // Motion is 0
+    //     require(voting.getStatus(currentPoll[_motion].index) <= uint8(1), "inactive or active");
+    //     if (voting.getStatus(currentPoll[_motion].index) == uint8(0)){
+    //         // TODO!! If one changes the enum in Voting to include other statuses then
+    //         // one should maybe not use the exclusion here.
+    //         // currentPoll[_motion].index = voting.start(uint8(4), uint40(defaultVotingDuration), uint120(defaultPermilleThreshold), uint120(repToken.totalSupply()));
+    //     }
 
-        _;
+    //     _;
 
-        // voting.safeVoteReturnStatus(
-        //     currentPoll[0].index,
-        //     msg.sender,
-        //     _address,
-        //     uint128(repToken.balanceOf(msg.sender)));
+    //     // voting.safeVoteReturnStatus(
+    //     //     currentPoll[0].index,
+    //     //     msg.sender,
+    //     //     _address,
+    //     //     uint128(repToken.balanceOf(msg.sender)));
 
-        // if (voting.getStatus(currentPoll[_motion].index) == 2){
-        //     _;
-        //     // reset status to inactive, so that polls can take place again.
-        // }
-    }
+    //     // if (voting.getStatus(currentPoll[_motion].index) == 2){
+    //     //     _;
+    //     //     // reset status to inactive, so that polls can take place again.
+    //     // }
+    // }
 
     /* ========== MIGRATION ========== */
 
-    function migrateDORG()
-    external 
-    voteOnMotion(5, address(0x0)){ 
-        // TODO! MUST BE a lot higher CONDITONS and THRESHOLD!!!
-        dOrgFactory.createDORG(address(voting), address(repToken), true);
-        deprecated = true;  // cant start new projects
-        _refundGas();
-    }
+    // function migrateDORG()
+    // external 
+    // voteOnMotion(5, address(0x0)){ 
+    //     // TODO! MUST BE a lot higher CONDITONS and THRESHOLD!!!
+    //     dOrgFactory.createDORG(address(voting), address(repToken), true);
+    //     deprecated = true;  // cant start new projects
+    //     _refundGas();
+    // }
 
-    function migrateRepToken(address _newRepToken)
-    external
-    voteOnMotion(6, address(_newRepToken)){ 
-        // TODO! MUST BE a lot higher CONDITONS and THRESHOLD!!!
-        // TODO: Check whethe I need to call this via RepToken(address(repToken))
-        oldRepToken = repToken;
-        repToken = IRepToken(voting.getElected(currentPoll[6].index));
-        _refundGas();
-    }
+    // function migrateRepToken(address _newRepToken)
+    // external
+    // voteOnMotion(6, address(_newRepToken)){ 
+    //     // TODO! MUST BE a lot higher CONDITONS and THRESHOLD!!!
+    //     // TODO: Check whethe I need to call this via RepToken(address(repToken))
+    //     oldRepToken = repToken;
+    //     repToken = IRepToken(voting.getElected(currentPoll[6].index));
+    //     _refundGas();
+    // }
 
 
-    function claimOldRep() external {
-        uint256 oldBalance = oldRepToken.balanceOf(msg.sender);
-        require(oldBalance>0);
-        // transfer and burn
-        repToken.mint(msg.sender, oldBalance);
-        oldRepToken.burn(msg.sender, oldBalance);
-    }
+    // function claimOldRep() external {
+    //     uint256 oldBalance = oldRepToken.balanceOf(msg.sender);
+    //     require(oldBalance>0);
+    //     // transfer and burn
+    //     repToken.mint(msg.sender, oldBalance);
+    //     oldRepToken.burn(msg.sender, oldBalance);
+    // }
 
 }

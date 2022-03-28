@@ -144,8 +144,8 @@ contract InternalProject {
     external 
     onlyProjectManager
     {
-        // bool withinFirstSubmissionPeriod = block.timestamp <= dao.getFirstPayrollSubmissionDue();
-        // bool withinSecondSubmissionPeriod = block.timestamp > dao.getVetoDue() && block.timestamp <= dao.getSecondPayrollSubmissionDue();
+        // bool withinFirstSubmissionPeriod = block.timestamp <= source.getFirstPayrollSubmissionDue();
+        // bool withinSecondSubmissionPeriod = block.timestamp > source.getVetoDue() && block.timestamp <= source.getSecondPayrollSubmissionDue();
 
         // require(withinFirstSubmissionPeriod || withinSecondSubmissionPeriod);
 
@@ -182,24 +182,24 @@ contract InternalProject {
     {
         require(shareValue<=1e18); 
 
-        address defaultPaymentToken = dao.getDefaultPaymentToken();
-        uint256 conversionRate = dao.getConversionRate(defaultPaymentToken);
+        address defaultPaymentToken = source.getDefaultPaymentToken();
+        uint256 conversionRate = source.getConversionRate(defaultPaymentToken);
 
         for (uint256 i; i<payouts.length; i++){
             IERC20(defaultPaymentToken).transferFrom(
-                address(dao),
+                address(source),
                 payouts[i].payee,
                 (payouts[i].amountInStableCointEquivalent * shareValue) / conversionRate);
             
             // transfer the rest as a redeemable DeptToken and allocate RepToken
             /*if (shareValue>0){
                 deptToken.transferFrom(
-                    address(dao),
+                    address(source),
                     payouts[i].payee,
                     (payouts[i].amountInStableCointEquivalent * (1e18 - shareValue)) / 1e18);
             }*/
 
-            dao.mintRepTokens(
+            source.mintRepTokens(
                 payouts[i].payee,
                 (payouts[i].amountInStableCointEquivalent * shareValue) / 1e18);
 

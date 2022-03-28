@@ -36,7 +36,7 @@ contract DAOPaymentTokens is Poll, DAOMembership {
     external
     onlyRegisteredToken(_erc20TokenAddress)
     {
-        require(_isVoteImplementationCall());
+        // require(_isVoteImplementationCall());
         uint256 index = 0;
         for (uint256 i = 0; i<paymentTokens.length; i++){
             if (_erc20TokenAddress==paymentTokens[i]){
@@ -54,7 +54,7 @@ contract DAOPaymentTokens is Poll, DAOMembership {
     function addPaymentToken(address _erc20TokenAddress, uint256 _conversionRate)
     external
     {
-        require(_isVoteImplementationCall());
+        // require(_isVoteImplementationCall());
         require(!isRegisteredToken(_erc20TokenAddress));
         paymentTokens.push(_erc20TokenAddress);
         _isRegisteredToken[_erc20TokenAddress] = false;
@@ -67,7 +67,7 @@ contract DAOPaymentTokens is Poll, DAOMembership {
     external
     onlyRegisteredToken(_erc20TokenAddress)
     {
-        require(_isVoteImplementationCall());
+        // require(_isVoteImplementationCall());
         defaultPaymentToken = IERC20(_erc20TokenAddress);
     }
 
@@ -166,7 +166,7 @@ contract DAOPaymentCycle is Poll {
     function changePaymentInterval(uint256 _paymentInterval)
     external
     {    
-        require(_isVoteImplementationCall());
+        // require(_isVoteImplementationCall());
         cycleParameters.paymentInterval = _paymentInterval;
         _checkCycleParameterConsistency();
     }
@@ -174,21 +174,21 @@ contract DAOPaymentCycle is Poll {
     function changeSecondPayrollSubmissionDuration(uint256 _secondPayrollSubmissionDuration)
     external
     {    
-        require(_isVoteImplementationCall());
+        // require(_isVoteImplementationCall());
         cycleParameters.secondPayrollSubmissionDuration = _secondPayrollSubmissionDuration;
         _checkCycleParameterConsistency();
     }
 
     function changeVetoDuration (uint256 _vetoDuration) external
     {
-        require(_isVoteImplementationCall());
+        // require(_isVoteImplementationCall());
         cycleParameters.vetoDuration = _vetoDuration;
         _checkCycleParameterConsistency();
     }
 
     function changeTriggerPaymentDuration (uint256 _triggerPaymentDuration) external
     {
-        require(_isVoteImplementationCall());
+        // require(_isVoteImplementationCall());
         cycleParameters.triggerPaymentDuration = _triggerPaymentDuration;
         _checkCycleParameterConsistency();
     }
@@ -197,7 +197,7 @@ contract DAOPaymentCycle is Poll {
     function resetPaymentTimer(uint256 _newStartTime) 
     external 
     {        
-        require(_isVoteImplementationCall());
+        // require(_isVoteImplementationCall());
         _resetPaymentTimer(_newStartTime);
     }
 
