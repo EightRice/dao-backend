@@ -255,8 +255,8 @@ contract Source is Poll, GasRefunds, HandlesRepToken, DAOMembership, DAOPaymentC
             uint256 sentAmount = (requestedAmount * share) / 1e18;
             uint256 deptAmount = (requestedAmount * (1e18 - share)) / 1e18;
             if (deptAmount>0){
-                deptToken.mint(deptAmount);
-                deptToken.increaseAllowance(internalProjects[i], deptAmount);
+                // deptToken.mint(deptAmount);
+                // deptToken.increaseAllowance(internalProjects[i], deptAmount);
             }
             defaultPaymentToken.increaseAllowance(internalProjects[i], (sentAmount * 1e18) / defaultTokenConversionRate);
             IInternalProject(internalProjects[i]).payout(share);

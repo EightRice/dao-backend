@@ -214,6 +214,14 @@ contract InternalProject {
 
     }  
 
+    function getThisCyclesRequestedAmount()
+    external 
+    view 
+    returns (uint256)
+    {
+        return thisCyclesRequestedAmount;
+    }
+
     modifier onlyMember {
         require(repToken.balanceOf(msg.sender)>0, "only Members");
         _;
