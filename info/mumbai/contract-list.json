@@ -1,0 +1,30 @@
+[
+  {
+    "name": "PaymentToken",
+    "address": "0x07803d183f85D31AbE3D0A7C6f7479A99363a33A"
+  },
+  {
+    "name": "ClientProjectFactory",
+    "address": "0x346082DB603d864a2a1ab16B13125bB6B16c7e03"
+  },
+  {
+    "name": "InternalProjectFactory",
+    "address": "0x23b8F911CD48dAecE4963f2CD40C56De2237A3B0"
+  },
+  {
+    "name": "Voting",
+    "address": "0x88d64Af67f4155823c3291Bf64f38e5624250e80"
+  },
+  {
+    "name": "Source",
+    "address": "0xF88fa119a347e2c527f3d0F2Dc154882E2C946CC"
+  },
+  {
+    "name": "RepToken",
+    "address": "0x4e5AD119896BAc6a0488CFFAc9cb398ce8d1c9A4"
+  },
+  {
+    "name": "clientProjectNumberOne",
+    "address": "0xfa1D0A421d756C284A8a9Cf161fA34A6574081F4"
+  }
+]

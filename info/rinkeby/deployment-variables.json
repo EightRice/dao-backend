@@ -1,42 +1,48 @@
 {
-  "0xC92d7b2cbAa3Fe42c7FF29e1Df3EE16CD3a37dAF": {
+  "0xe41232Ec423788163477db1E164b777C5166Db3D": {
     "name": "PaymentToken",
     "variables": [
       "\"Mock DAI\"",
       "\"DAI\""
     ]
   },
-  "0xa47994259Af3235CF27095fc4105f963f6Cf8B55": {
+  "0x6D37203aC06902c07B4305a930EF4FE0099D8C44": {
     "name": "ClientProjectFactory",
     "variables": []
   },
-  "0x76258da27F36705C63a7138B06d3a82D2f577831": {
+  "0xb1B15c086A2Ec6606e28e737600a030b97d15338": {
     "name": "InternalProjectFactory",
     "variables": []
   },
-  "0xba910552c73cf6821c88B74E47A661f48c9328A6": {
+  "0xbc2B062D35283CBA59d8BFD76030C02722900B99": {
     "name": "Voting",
     "variables": []
   },
-  "0x1326C8E60Ac67FDd6c052B9a6a75Ac7CCb68637F": {
+  "0x81E04eE02dCfB761a90E24D68964FCEc248f03Ae": {
     "name": "Source",
     "variables": [
-      "\"0xba910552c73cf6821c88B74E47A661f48c9328A6\""
+      "\"0xbc2B062D35283CBA59d8BFD76030C02722900B99\""
     ]
   },
-  "0x6F93e2Bd4b8c0349159061FD98E2D9531d19e0ae": {
+  "0xaC0F329f60C5A0Ef8b6f694e43c9A00438e73b24": {
     "name": "RepToken",
     "variables": [
       "\"DORG\"",
       "\"DORG\""
     ]
   },
-  "0x0b30541Ff354E9843FbEf46b79cF2C46E7607959": {
+  "0x6792DcBE2BcC36Fc8Dc6FC271E708B7056920957": {
     "name": "ClientProject",
     "variables": [
+      "\"0x81E04eE02dCfB761a90E24D68964FCEc248f03Ae\"",
+      "\"0x41923d8c6053517b9C5ABe4e2b506A26946771d4\"",
       "\"0x21ce0c2a2e93598D4B5C9D2063a83846Ee1296AE\"",
       "\"0xBe0b5E62952b110e92a8C67baD4FBe5321C7d678\"",
-      "\"0xC92d7b2cbAa3Fe42c7FF29e1Df3EE16CD3a37dAF\""
+      "\"0xaC0F329f60C5A0Ef8b6f694e43c9A00438e73b24\"",
+      "\"0xf05633aE3A5CfcF7996ed8858abA33eb17Ec8Fb3\"",
+      "\"0xbc2B062D35283CBA59d8BFD76030C02722900B99\"",
+      "\"0xe41232Ec423788163477db1E164b777C5166Db3D\"",
+      "45"
     ]
   }
 }

@@ -18,10 +18,11 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
- const { alicepk, bobpk, sampk, ETHERSCAN_API_KEY, LOCALHOST, LOCALPORT, rinkebyurl } = process.env;
+const { alicepk, bobpk, sampk, ETHERSCAN_API_KEY, POLYGONSCAN_API_KEY, LOCALHOST, LOCALPORT, rinkebyurl, MUMBAI_RPC_ENDPOINT  } = process.env;
+let network = "mumbai"
 module.exports = {
   solidity: "0.8.7",
-  defaultNetwork: "rinkeby",
+  defaultNetwork: network,
   networks:{
     localhost: {
       url: LOCALHOST + ":" + LOCALPORT,
@@ -31,11 +32,20 @@ module.exports = {
       url: rinkebyurl,
       accounts: [alicepk, bobpk, sampk]
     },
+    mumbai: {
+      url: MUMBAI_RPC_ENDPOINT,
+      accounts: [alicepk, bobpk, sampk]
+    },
     hardhat: {
       mining: {}
     }
   },
   etherscan: {
-    apiKey: ETHERSCAN_API_KEY,
+    apiKey: network=="mumbai"? POLYGONSCAN_API_KEY: ETHERSCAN_API_KEY,
   },
+  polygonscan: {
+    apiKey: POLYGONSCAN_API_KEY,
+  }
 };
+
+// https://calibration-faucet.filswan.com/#/dashboard

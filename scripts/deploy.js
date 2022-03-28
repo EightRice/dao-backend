@@ -415,18 +415,31 @@ async function deployAll(
     newContract = true
     try {
       
-      tx = await source.createClientProject(
+      tx = await source.connect(SIGNERS.ALICE).createClientProject(
         SIGNERS.CHARLIE.address,  // sourcing 
         SIGNERS.BOB.address,
         defaultPaymentTokenAddress
       )
-  
       receipt = await tx.wait()
       let clientProjectAddress = await source.clientProjects(0);
+      
+      let repTokenAddress = await source.repToken();
+      let arbitrationEscrowAddress = await source.arbitrationEscrow();
+      let votingAddress = await source.voting();
+      let votingDuration = (await source.initialVotingDuration()).toString();
 
       deployInfo["deploymentVariables"][clientProjectAddress] = {
         "name": "ClientProject",
-        "variables": [`"${SIGNERS.CHARLIE.address}"`, `"${SIGNERS.BOB.address}"`, `"${defaultPaymentTokenAddress}"`]}
+        "variables": [
+          `"${source.address}"`,
+          `"${SIGNERS.ALICE.address}"`,
+          `"${SIGNERS.CHARLIE.address}"`,
+          `"${SIGNERS.BOB.address}"`,
+          `"${repTokenAddress}"`,
+          `"${arbitrationEscrowAddress}"`,
+          `"${votingAddress}"`,
+          `"${defaultPaymentTokenAddress}"`,
+          `${votingDuration}`]}
       errorMessage = "None"
       updateDeployInfo(contractName, functionName, source.address, receipt.gasUsed.toString(), true, errorMessage, newContract, "clientProjectNumberOne", clientProjectAddress, verbose)
     } catch(err) {
