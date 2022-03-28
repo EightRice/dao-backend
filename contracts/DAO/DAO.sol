@@ -233,30 +233,38 @@ contract Source is Poll, GasRefunds, HandlesRepToken, DAOMembership, DAOPaymentC
     // }
 
 
-    
     function payout()
     external 
     refundGas()
+    maySubmitPayment()
     {
+        // NOTE: Think about swapping into the defaultPaymentToken.
+        uint256 totalRequested = getThisCyclesTotalRequested();
+        uint256 defaultTokenConversionRate = getConversionRate(address(defaultPaymentToken));
+        uint256 balanceOfDAOInStableCoinEquivalent = (defaultPaymentToken.balanceOf(address(this)) * defaultTokenConversionRate) / 1e18;
+        uint256 share = 1e18;
         
-        require(block.timestamp - startPaymentTimer > paymentInterval);
-        //TODO: Maybe just those internal projects that are still active
-        uint256 totalAmount = 0;
-        uint256 totalRep = 0;
-        for (uint256 i = 0; i<internalProjects.length; i++){
-            // set amounts to zero again.
-            (uint256 amount, uint256 repAmount) = IInternalProject(internalProjects[i]).pay();
-            totalAmount += amount;
-            totalRep += repAmount;
+        if (totalRequested > balanceOfDAOInStableCoinEquivalent){
+            share = (balanceOfDAOInStableCoinEquivalent * 1e18) / totalRequested;
         }
-        // TODO!! Start this in constructor
-        startPaymentTimer = block.timestamp;
 
-        emit Payment(totalAmount, totalRep);
-        // Maybe earn some DORG.
-        // TODO: Maybe discuss with feedback
-        // _mintRepTokens(msg.sender, payoutRep);
+        // calculate how much there is in the treasury as opposed to what is requested
+        for (uint256 i=0; i < internalProjects.length; i++){
+            //get requeste amounts per Token
+            uint256 requestedAmount = IInternalProject(internalProjects[i]).getThisCyclesRequestedAmount();
+            uint256 sentAmount = (requestedAmount * share) / 1e18;
+            uint256 deptAmount = (requestedAmount * (1e18 - share)) / 1e18;
+            if (deptAmount>0){
+                deptToken.mint(deptAmount);
+                deptToken.increaseAllowance(internalProjects[i], deptAmount);
+            }
+            defaultPaymentToken.increaseAllowance(internalProjects[i], (sentAmount * 1e18) / defaultTokenConversionRate);
+            IInternalProject(internalProjects[i]).payout(share);
+        }
 
+        _resetPaymentTimer(block.timestamp);
+
+        // emit Payment();
         
     }
 

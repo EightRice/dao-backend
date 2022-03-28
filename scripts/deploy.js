@@ -347,7 +347,8 @@ async function deployAll(
   functionName = "addPaymentToken"
   newContract = false
   try {
-    tx = await source.connect(SIGNERS.ALICE).addPaymentToken(DAICoin.address)
+    let oneETH = hre.ethers.BigNumber.from("1000000000000000000").mul(1)
+    tx = await source.connect(SIGNERS.ALICE).addPaymentToken(DAICoin.address, oneETH)
     receipt = await tx.wait()
     errorMessage = "None"
     updateDeployInfo(contractName, functionName, source.address, receipt.gasUsed.toString(), true, errorMessage, newContract, "", "", verbose)

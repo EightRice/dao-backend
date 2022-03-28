@@ -57,7 +57,7 @@ contract DAOPaymentTokens is Poll, DAOMembership {
         // require(_isVoteImplementationCall());
         require(!isRegisteredToken(_erc20TokenAddress));
         paymentTokens.push(_erc20TokenAddress);
-        _isRegisteredToken[_erc20TokenAddress] = false;
+        _isRegisteredToken[_erc20TokenAddress] = true;
         conversionRate[_erc20TokenAddress] = _conversionRate;
         // TODO: Might add Oracle functionality at some point
     }

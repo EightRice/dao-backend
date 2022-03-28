@@ -1,7 +1,7 @@
 [
   {
     "contract": "PaymentToken",
-    "address": "0xFEdDc523dba365F80A6D533c3BE5ED78AD83fB1f",
+    "address": "0xA94A3572343f0684FB2C3584853992D47e4F9261",
     "function": "constructor",
     "gasUsed": "1404047",
     "successful": true,
@@ -9,47 +9,47 @@
   },
   {
     "contract": "ClientProjectFactory",
-    "address": "0x8b77b0dfa100Daafa2CD630925679BE1176527Ff",
+    "address": "0x07803d183f85D31AbE3D0A7C6f7479A99363a33A",
     "function": "constructor",
-    "gasUsed": "4251889",
+    "gasUsed": "4243041",
     "successful": true,
     "errorMessage": "None"
   },
   {
     "contract": "InternalProjectFactory",
-    "address": "0x64ff869599835c46Ac69506c507e5DCFA079C919",
+    "address": "0x346082DB603d864a2a1ab16B13125bB6B16c7e03",
     "function": "constructor",
-    "gasUsed": "2908969",
+    "gasUsed": "2607937",
     "successful": true,
     "errorMessage": "None"
   },
   {
     "contract": "Voting",
-    "address": "0x31a599Fc8C2ee48b096772fF38C207603e9024F4",
+    "address": "0x23b8F911CD48dAecE4963f2CD40C56De2237A3B0",
     "function": "constructor",
-    "gasUsed": "2908969",
+    "gasUsed": "2607937",
     "successful": true,
     "errorMessage": "None"
   },
   {
     "contract": "Source",
-    "address": "0xcCC0eC2F1eeBbEd14bddEbeF8C30A0c8F3842060",
+    "address": "0x88d64Af67f4155823c3291Bf64f38e5624250e80",
     "function": "constructor",
-    "gasUsed": "5088120",
+    "gasUsed": "5264821",
     "successful": true,
     "errorMessage": "None"
   },
   {
     "contract": "Source",
-    "address": "0xcCC0eC2F1eeBbEd14bddEbeF8C30A0c8F3842060",
+    "address": "0x88d64Af67f4155823c3291Bf64f38e5624250e80",
     "function": "importMembers",
-    "gasUsed": "135457",
+    "gasUsed": "135260",
     "successful": true,
     "errorMessage": "None"
   },
   {
     "contract": "Source",
-    "address": "0xcCC0eC2F1eeBbEd14bddEbeF8C30A0c8F3842060",
+    "address": "0x88d64Af67f4155823c3291Bf64f38e5624250e80",
     "function": "repToken Attribute View",
     "gasUsed": 0,
     "successful": true,
@@ -57,15 +57,15 @@
   },
   {
     "contract": "Source",
-    "address": "0xcCC0eC2F1eeBbEd14bddEbeF8C30A0c8F3842060",
+    "address": "0x88d64Af67f4155823c3291Bf64f38e5624250e80",
     "function": "setDeploymentFactories",
-    "gasUsed": "64332",
+    "gasUsed": "64300",
     "successful": true,
     "errorMessage": "None"
   },
   {
     "contract": "PaymentToken",
-    "address": "0xFEdDc523dba365F80A6D533c3BE5ED78AD83fB1f",
+    "address": "0xA94A3572343f0684FB2C3584853992D47e4F9261",
     "function": "freeMint",
     "gasUsed": "67747",
     "successful": true,
@@ -73,7 +73,7 @@
   },
   {
     "contract": "PaymentToken",
-    "address": "0xFEdDc523dba365F80A6D533c3BE5ED78AD83fB1f",
+    "address": "0xA94A3572343f0684FB2C3584853992D47e4F9261",
     "function": "transfer",
     "gasUsed": "103740",
     "successful": true,
@@ -81,23 +81,23 @@
   },
   {
     "contract": "Source",
-    "address": "0xcCC0eC2F1eeBbEd14bddEbeF8C30A0c8F3842060",
+    "address": "0x88d64Af67f4155823c3291Bf64f38e5624250e80",
     "function": "addPaymentToken",
-    "gasUsed": "75220",
+    "gasUsed": "71980",
     "successful": true,
     "errorMessage": "None"
   },
   {
     "contract": "Source",
-    "address": "0xcCC0eC2F1eeBbEd14bddEbeF8C30A0c8F3842060",
+    "address": "None",
     "function": "setDefaultPaymentToken",
-    "gasUsed": "43804",
-    "successful": true,
-    "errorMessage": "None"
+    "gasUsed": 0,
+    "successful": false,
+    "errorMessage": "ProviderError: VM Exception while processing transaction: revert"
   },
   {
     "contract": "Source",
-    "address": "0xFEdDc523dba365F80A6D533c3BE5ED78AD83fB1f",
+    "address": "0x0000000000000000000000000000000000000000",
     "function": "defaultPaymentToken Attribute View",
     "gasUsed": 0,
     "successful": true,
@@ -105,49 +105,49 @@
   },
   {
     "contract": "Source",
-    "address": "0xcCC0eC2F1eeBbEd14bddEbeF8C30A0c8F3842060",
+    "address": "0x88d64Af67f4155823c3291Bf64f38e5624250e80",
     "function": "changeInitialVotingDuration",
-    "gasUsed": "34690",
+    "gasUsed": "34647",
     "successful": true,
     "errorMessage": "None"
   },
   {
     "contract": "Source",
-    "address": "0xcCC0eC2F1eeBbEd14bddEbeF8C30A0c8F3842060",
+    "address": "None",
     "function": "createClientProject",
-    "gasUsed": "3928565",
-    "successful": true,
-    "errorMessage": "None"
+    "gasUsed": 0,
+    "successful": false,
+    "errorMessage": "ProviderError: VM Exception while processing transaction: revert"
   },
   {
     "contract": "ClientProject",
-    "address": "0xcCC0eC2F1eeBbEd14bddEbeF8C30A0c8F3842060",
+    "address": "None",
     "function": "voteOnProject",
-    "gasUsed": "49232",
-    "successful": true,
-    "errorMessage": "None"
+    "gasUsed": 0,
+    "successful": false,
+    "errorMessage": "TypeError: firstClientProject.connect is not a function"
   },
   {
     "contract": "ClientProject",
-    "address": "0xcCC0eC2F1eeBbEd14bddEbeF8C30A0c8F3842060",
+    "address": "None",
     "function": "registerVote",
-    "gasUsed": "30662",
-    "successful": true,
-    "errorMessage": "None"
+    "gasUsed": 0,
+    "successful": false,
+    "errorMessage": "TypeError: firstClientProject.registerVote is not a function"
   },
   {
     "contract": "ClientProject",
-    "address": "0xcCC0eC2F1eeBbEd14bddEbeF8C30A0c8F3842060",
+    "address": "None",
     "function": "startProject",
-    "gasUsed": "29065",
-    "successful": true,
-    "errorMessage": "None"
+    "gasUsed": 0,
+    "successful": false,
+    "errorMessage": "TypeError: firstClientProject.connect is not a function"
   },
   {
     "contract": "Source",
-    "address": "0xcCC0eC2F1eeBbEd14bddEbeF8C30A0c8F3842060",
+    "address": "0x88d64Af67f4155823c3291Bf64f38e5624250e80",
     "function": "changeInitialVotingDuration",
-    "gasUsed": "34702",
+    "gasUsed": "34659",
     "successful": true,
     "errorMessage": "None"
   }

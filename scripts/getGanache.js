@@ -19,7 +19,7 @@ require('dotenv').config();
 
 function getGanacheCommand () {
     let gasLimit = "80000000"
-    let port = process.env["localport"]
+    let port = process.env["LOCALPORT"]
     let pks = [process.env["alicepk"], process.env["bobpk"], process.env["sampk"]]
     // let addresses = new Array()
     let accounts = ''

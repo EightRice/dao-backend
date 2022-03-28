@@ -19,7 +19,7 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
  * @type import('hardhat/config').HardhatUserConfig
  */
 const { alicepk, bobpk, sampk, ETHERSCAN_API_KEY, POLYGONSCAN_API_KEY, LOCALHOST, LOCALPORT, rinkebyurl, MUMBAI_RPC_ENDPOINT  } = process.env;
-let network = "mumbai"
+let network = "localhost"
 module.exports = {
   solidity: "0.8.7",
   defaultNetwork: network,
