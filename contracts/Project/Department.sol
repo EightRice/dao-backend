@@ -7,6 +7,11 @@ import "../Arbitration/Arbitration.sol";
 import "../DAO/IDAO.sol";
 import "../Voting/IVoting.sol";
 
+struct Payout {
+    address payee;
+    uint256 amountInStableCointEquivalent;
+}
+
 contract InternalProject { 
     // maybe inherit from mutual parent with Project contract.
 
@@ -35,13 +40,13 @@ contract InternalProject {
     uint256 public numberOfVotes;
     uint256 public paymentInterval;
 
-    struct Payout {
-        address payee;
-        uint256[] erc20Amounts;
-        address[] erc20Addresses;
-    }
+    
+    uint256 internal remainingFunds;
+    uint256 internal allowedSpendingsPerPaymentCycle;
 
-    Payout[] payoutSpecs;
+    Payout[] payouts;
+
+    uint256 internal thisCyclesRequestedAmount;
 
     address payable[] team;
     mapping(address=>bool) _isTeamMember;
@@ -135,81 +140,95 @@ contract InternalProject {
 
 
 
-    function submitPayrollRoster(address payable[] memory _payees, uint256[][] memory _amounts, address[][] memory _erc20Addresses) external {
-        require(msg.sender==teamLead && _payees.length == _amounts.length);
-        // TODO: do we need the _payees.length == _amounts.length requirements.
-        // Will the contract function call revert if _amounts[i] doesnt exist?
-        // If not, then we need to add another row with _repAmount length. 
-        require(block.timestamp - source.getStartPaymentTimer() < (paymentInterval * 3) / 4);
 
+    function submitPayrollRoster(
+        address payable[] memory _payees,
+        uint256[] memory _amounts) 
+    external 
+    onlyProjectManager
+    {
+        bool withinFirstSubmissionPeriod = block.timestamp <= dao.getFirstPayrollSubmissionDue();
+        bool withinSecondSubmissionPeriod = block.timestamp > dao.getVetoDue() && block.timestamp <= dao.getSecondPayrollSubmissionDue();
+
+        require(withinFirstSubmissionPeriod || withinSecondSubmissionPeriod);
+        require(_payees.length == _amounts.length);
+
+        
+        uint256 _thisCyclesRequestedAmount;
         for (uint256 i=0; i<_payees.length; i++){
-            payoutSpecs.push(Payout({
+
+            _thisCyclesRequestedAmount += _amounts[i] ;
+
+            payouts.push(Payout({
                 payee: _payees[i],
-                erc20Amounts: _amounts[i],
-                erc20Addresses: _erc20Addresses[i]
+                amountInStableCointEquivalent: _amounts[i]
             }));
+
         }
+
+        require(_thisCyclesRequestedAmount <= allowedSpendingsPerPaymentCycle);
+        require(_thisCyclesRequestedAmount <= remainingFunds); 
+        remainingFunds -= _thisCyclesRequestedAmount;
+
+        // set requested amount for this cycle.
+        thisCyclesRequestedAmount = _thisCyclesRequestedAmount;
         
-        // uint256 totalPaymentValue = 0;
-        // uint256 totalRepValue = 0;
-        // for (uint256 i; i<_payees.length; i++){
-        //     totalPaymentValue += _amounts[i];
-        //     totalRepValue += _repAmounts[i];
-        // } 
-        // TODO: Maybe check for available funds
-        // require(totalPaymentValue <= funds, "Not enough funds in contract");
- 
-        // payees = _payees;
-        // amounts = _amounts;
-        // repAmounts = _repAmounts;
-
-        // check whether requested and then approved amount is not exceeded
-
-        emit PayrollRosterSubmitted();  // maybe milestones[milestoneIndex].payrollVetoDeadline
+        // emit PayrollRosterSubmitted();  // maybe milestones[milestoneIndex].payrollVetoDeadline
     }
-   
 
-    function pay() external returns(uint256 totalPaymentValue, uint256 totalRepValue) {
-        require(msg.sender==address(source));
 
-        
-        for (uint256 i; i<payoutSpecs.length; i++){
-            for (uint256 j; j<payoutSpecs[i].erc20Addresses.length; j++){
-                uint256 paymentAmount =  payoutSpecs[i].erc20Amounts[j];
-                IERC20(payoutSpecs[i].erc20Addresses[j]).transfer(payoutSpecs[i].payee, paymentAmount);
-                funds[payoutSpecs[i].erc20Addresses[j]] -= paymentAmount;
-            }
+
+    function payout(uint256 shareValue) 
+    external 
+    onlyDAO
+    {
+        require(shareValue<=1e18); 
+
+        address defaultPaymentToken = dao.getDefaultPaymentToken();
+        uint256 conversionRate = dao.getConversionRate(defaultPaymentToken);
+
+        for (uint256 i; i<payouts.length; i++){
+            IERC20(defaultPaymentToken).transferFrom(
+                address(dao),
+                payouts[i].payee,
+                (payouts[i].amountInStableCointEquivalent * shareValue) / conversionRate);
+            
+            // transfer the rest as a redeemable DeptToken and allocate RepToken
+            /*if (shareValue>0){
+                deptToken.transferFrom(
+                    address(dao),
+                    payouts[i].payee,
+                    (payouts[i].amountInStableCointEquivalent * (1e18 - shareValue)) / 1e18);
+            }*/
+
+            dao.mintRepTokens(
+                payouts[i].payee,
+                (payouts[i].amountInStableCointEquivalent * shareValue) / 1e18);
+
+            // NOTE: maybe deduct the expenses from the allowed spendings per month and transfer the rest over to the next months allowed spendings. 
             
         }
 
-        // and set payee amounts to []
-        // delete payees;
-        // delete amounts;
-        // delete repAmounts;
-        delete payoutSpecs;
-        totalPaymentValue = _totalPaymentValueThisPayroll;
-        totalRepValue = _totalRepValueThisPayroll;
-        _totalPaymentValueThisPayroll = 0;
-        _totalRepValueThisPayroll = 0;
+        // delete all cached payouts, payoutTokens and thisCyclesRequestedAmountPerToken
+        delete payouts;
+        // also delte this cylces total requested amount.
+        thisCyclesRequestedAmount = 0;      
 
-    }    
+    }  
 
-
-    function withdraw() external {
-        require(msg.sender==address(source));
-        for (uint256 i; i<registeredPaymentTokens.length; i++){
-            uint256 amount = IERC20(registeredPaymentTokens[i]).balanceOf(address(this));
-            IERC20(registeredPaymentTokens[i]).transfer(address(source), amount);
-        }
+    modifier onlyMember {
+        require(repToken.balanceOf(msg.sender)>0, "only Members");
+        _;
     }
 
-
-    function freeze() external {
-        // lock contract functions until further action.
+    modifier onlyDAO {
+        require(msg.sender==address(source), "only DAO");
+        _;
     }
 
-    function unfreeze() external {
-        // unlock contract functions.
+    modifier onlyProjectManager {
+        require(msg.sender==teamLead, "only DAO");
+        _;
     }
 
 }
