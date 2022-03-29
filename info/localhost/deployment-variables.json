@@ -1,49 +1,54 @@
 {
-  "0xecB2625A2ebB86B085d5780BCdb55D608A8beF00": {
+  "0xd783669Ad0E6939ce921f4cE677daAF98f54018F": {
     "name": "PaymentToken",
     "variables": [
       "\"Mock USDC with 18 decimals\"",
       "\"USDC\""
     ]
   },
-  "0x56834b65e01D88012c0Df2ed42cbB6780e527c7C": {
+  "0x0838Ac039CF8c0ac28675e4dfc54597b39eC44ce": {
     "name": "ClientProjectFactory",
     "variables": []
   },
-  "0x93b4AbC54bEC2AA12ff6f36b042091342Cecc36D": {
+  "0xB65b56Ce24e05df8e495C7568b7289A87Ceb5872": {
     "name": "InternalProjectFactory",
     "variables": []
   },
-  "0x6c7Ac3DE12149a386b4da66A41b1B3951CD91687": {
+  "0x55D23bABE6ABbf21B8007BD5E234781308D7D08d": {
     "name": "Voting",
     "variables": []
   },
-  "0x230c1d1d9d42Ec542978908e721a5b4780001Ab2": {
-    "name": "RepToken",
-    "variables": [
-      "\"dOrg Reputation Token\"",
-      "\"dOrg\""
-    ]
-  },
-  "0x05264CB9fB20af51Bde3ae71fC1A750e979a7710": {
+  "0x8A5F35eb1Bc9475b1b60742d9416db7863C26497": {
     "name": "Source",
     "variables": [
-      "\"0x6c7Ac3DE12149a386b4da66A41b1B3951CD91687\"",
-      "\"0x230c1d1d9d42Ec542978908e721a5b4780001Ab2\""
+      "\"0x55D23bABE6ABbf21B8007BD5E234781308D7D08d\"",
+      "\"0xDF8A6d7F673834617A1208409162b1C9a35B65A0\""
     ]
   },
-  "0xbA7D6aE892b2f59161D87448895439172D0BF358": {
+  "0x3fD8df7f5a43A84d6eC70c516a8bDBAa2617C077": {
     "name": "ClientProject",
     "variables": [
-      "\"0x05264CB9fB20af51Bde3ae71fC1A750e979a7710\"",
+      "\"0x8A5F35eb1Bc9475b1b60742d9416db7863C26497\"",
       "\"0x41923d8c6053517b9C5ABe4e2b506A26946771d4\"",
       "\"0x21ce0c2a2e93598D4B5C9D2063a83846Ee1296AE\"",
       "\"0xBe0b5E62952b110e92a8C67baD4FBe5321C7d678\"",
-      "\"0x230c1d1d9d42Ec542978908e721a5b4780001Ab2\"",
-      "\"0x9B580E1aC193e73E5C0EcD1b80a03e29860b9F55\"",
-      "\"0x6c7Ac3DE12149a386b4da66A41b1B3951CD91687\"",
-      "\"0xecB2625A2ebB86B085d5780BCdb55D608A8beF00\"",
+      "\"0xDF8A6d7F673834617A1208409162b1C9a35B65A0\"",
+      "\"0x08a8C91F069339a28D9DfD27cCAA5e8deC8Fa6eB\"",
+      "\"0x55D23bABE6ABbf21B8007BD5E234781308D7D08d\"",
+      "\"0xd783669Ad0E6939ce921f4cE677daAF98f54018F\"",
       "2"
+    ]
+  },
+  "0x510B5C3A69A66d238A3b096F39D9C7a5CC59BF50": {
+    "name": "InternalProject",
+    "variables": [
+      "\"0x8A5F35eb1Bc9475b1b60742d9416db7863C26497\"",
+      "\"0x41923d8c6053517b9C5ABe4e2b506A26946771d4\"",
+      "\"0x55D23bABE6ABbf21B8007BD5E234781308D7D08d\"",
+      "2",
+      "0",
+      "\"4180000000000000000000\"",
+      "\"105000000000000000000\""
     ]
   }
 }

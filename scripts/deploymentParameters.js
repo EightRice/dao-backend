@@ -2,7 +2,7 @@ const hre = require('hardhat')
 
 let ZeroAddress = "0x0000000000000000000000000000000000000000"
 
-let deployRepToken = true
+let deployRepToken = false
 let hardcodedRepTokenAddress = "0xDF8A6d7F673834617A1208409162b1C9a35B65A0" 
 let RepTokenAddress = deployRepToken ? ZeroAddress:hardcodedRepTokenAddress
 let useRealDorgAccounts = true;
@@ -14,6 +14,7 @@ if (hre.network.name=="localhost") {
 } else {
   TypicalMiningDurationInSec = 45;
 }
+transferToAllDorgHolders = false
 
 module.exports = {
   withClientProjectCreation,
@@ -21,5 +22,6 @@ module.exports = {
   useRealDorgAccounts,
   deployRepToken,
   RepTokenAddress,
+  transferToAllDorgHolders,
   verbose
 }

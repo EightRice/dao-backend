@@ -1,7 +1,7 @@
 [
   {
     "contract": "PaymentToken",
-    "address": "0xecB2625A2ebB86B085d5780BCdb55D608A8beF00",
+    "address": "0xd783669Ad0E6939ce921f4cE677daAF98f54018F",
     "function": "constructor",
     "gasUsed": "1404275",
     "successful": true,
@@ -9,7 +9,7 @@
   },
   {
     "contract": "ClientProjectFactory",
-    "address": "0x56834b65e01D88012c0Df2ed42cbB6780e527c7C",
+    "address": "0x0838Ac039CF8c0ac28675e4dfc54597b39eC44ce",
     "function": "constructor",
     "gasUsed": "4243041",
     "successful": true,
@@ -17,7 +17,7 @@
   },
   {
     "contract": "InternalProjectFactory",
-    "address": "0x93b4AbC54bEC2AA12ff6f36b042091342Cecc36D",
+    "address": "0xB65b56Ce24e05df8e495C7568b7289A87Ceb5872",
     "function": "constructor",
     "gasUsed": "1931774",
     "successful": true,
@@ -25,7 +25,7 @@
   },
   {
     "contract": "Voting",
-    "address": "0x6c7Ac3DE12149a386b4da66A41b1B3951CD91687",
+    "address": "0x55D23bABE6ABbf21B8007BD5E234781308D7D08d",
     "function": "constructor",
     "gasUsed": "1931774",
     "successful": true,
@@ -33,15 +33,15 @@
   },
   {
     "contract": "RepToken",
-    "address": "0x230c1d1d9d42Ec542978908e721a5b4780001Ab2",
-    "function": "constructor",
-    "gasUsed": "1635963",
+    "address": "0xDF8A6d7F673834617A1208409162b1C9a35B65A0",
+    "function": "Already Deployed",
+    "gasUsed": 0,
     "successful": true,
     "errorMessage": "None"
   },
   {
     "contract": "Source",
-    "address": "0x05264CB9fB20af51Bde3ae71fC1A750e979a7710",
+    "address": "0x8A5F35eb1Bc9475b1b60742d9416db7863C26497",
     "function": "constructor",
     "gasUsed": "3933720",
     "successful": true,
@@ -49,23 +49,15 @@
   },
   {
     "contract": "RepToken",
-    "address": "0x230c1d1d9d42Ec542978908e721a5b4780001Ab2",
+    "address": "0xDF8A6d7F673834617A1208409162b1C9a35B65A0",
     "function": "changeDAO",
-    "gasUsed": "43719",
+    "gasUsed": "28719",
     "successful": true,
     "errorMessage": "None"
   },
   {
     "contract": "Source",
-    "address": "0x05264CB9fB20af51Bde3ae71fC1A750e979a7710",
-    "function": "importMembers",
-    "gasUsed": "3235944",
-    "successful": true,
-    "errorMessage": "None"
-  },
-  {
-    "contract": "Source",
-    "address": "0x05264CB9fB20af51Bde3ae71fC1A750e979a7710",
+    "address": "0x8A5F35eb1Bc9475b1b60742d9416db7863C26497",
     "function": "repToken Attribute View",
     "gasUsed": 0,
     "successful": true,
@@ -73,7 +65,7 @@
   },
   {
     "contract": "Source",
-    "address": "0x05264CB9fB20af51Bde3ae71fC1A750e979a7710",
+    "address": "0x8A5F35eb1Bc9475b1b60742d9416db7863C26497",
     "function": "setDeploymentFactories",
     "gasUsed": "64300",
     "successful": true,
@@ -81,39 +73,31 @@
   },
   {
     "contract": "PaymentToken",
-    "address": "0xecB2625A2ebB86B085d5780BCdb55D608A8beF00",
+    "address": "0xd783669Ad0E6939ce921f4cE677daAF98f54018F",
     "function": "freeMint",
     "gasUsed": "67747",
     "successful": true,
     "errorMessage": "None"
   },
   {
-    "contract": "PaymentToken",
-    "address": "0xecB2625A2ebB86B085d5780BCdb55D608A8beF00",
-    "function": "transfer",
-    "gasUsed": "5342526",
-    "successful": true,
-    "errorMessage": "None"
-  },
-  {
     "contract": "Source",
-    "address": "0x05264CB9fB20af51Bde3ae71fC1A750e979a7710",
+    "address": "0x8A5F35eb1Bc9475b1b60742d9416db7863C26497",
     "function": "addPaymentToken",
-    "gasUsed": "91190",
+    "gasUsed": "91202",
     "successful": true,
     "errorMessage": "None"
   },
   {
     "contract": "Source",
-    "address": "0x05264CB9fB20af51Bde3ae71fC1A750e979a7710",
+    "address": "0x8A5F35eb1Bc9475b1b60742d9416db7863C26497",
     "function": "setDefaultPaymentToken",
-    "gasUsed": "43821",
+    "gasUsed": "43833",
     "successful": true,
     "errorMessage": "None"
   },
   {
     "contract": "Source",
-    "address": "0xecB2625A2ebB86B085d5780BCdb55D608A8beF00",
+    "address": "0xd783669Ad0E6939ce921f4cE677daAF98f54018F",
     "function": "defaultPaymentToken Attribute View",
     "gasUsed": 0,
     "successful": true,
@@ -121,7 +105,7 @@
   },
   {
     "contract": "Source",
-    "address": "0x05264CB9fB20af51Bde3ae71fC1A750e979a7710",
+    "address": "0x8A5F35eb1Bc9475b1b60742d9416db7863C26497",
     "function": "changeInitialVotingDuration",
     "gasUsed": "34669",
     "successful": true,
@@ -129,15 +113,15 @@
   },
   {
     "contract": "Source",
-    "address": "0x05264CB9fB20af51Bde3ae71fC1A750e979a7710",
+    "address": "0x8A5F35eb1Bc9475b1b60742d9416db7863C26497",
     "function": "createClientProject",
-    "gasUsed": "3923003",
+    "gasUsed": "3923015",
     "successful": true,
     "errorMessage": "None"
   },
   {
     "contract": "ClientProject",
-    "address": "0x05264CB9fB20af51Bde3ae71fC1A750e979a7710",
+    "address": "0x8A5F35eb1Bc9475b1b60742d9416db7863C26497",
     "function": "voteOnProject",
     "gasUsed": "49210",
     "successful": true,
@@ -145,7 +129,7 @@
   },
   {
     "contract": "ClientProject",
-    "address": "0x05264CB9fB20af51Bde3ae71fC1A750e979a7710",
+    "address": "0x8A5F35eb1Bc9475b1b60742d9416db7863C26497",
     "function": "registerVote",
     "gasUsed": "30662",
     "successful": true,
@@ -153,15 +137,23 @@
   },
   {
     "contract": "ClientProject",
-    "address": "0x05264CB9fB20af51Bde3ae71fC1A750e979a7710",
+    "address": "0x8A5F35eb1Bc9475b1b60742d9416db7863C26497",
     "function": "startProject",
     "gasUsed": "29065",
     "successful": true,
     "errorMessage": "None"
   },
   {
+    "contract": "InternalProject",
+    "address": "0x8A5F35eb1Bc9475b1b60742d9416db7863C26497",
+    "function": "createInternalProject",
+    "gasUsed": "1760881",
+    "successful": true,
+    "errorMessage": "None"
+  },
+  {
     "contract": "Source",
-    "address": "0x05264CB9fB20af51Bde3ae71fC1A750e979a7710",
+    "address": "0x8A5F35eb1Bc9475b1b60742d9416db7863C26497",
     "function": "changeInitialVotingDuration",
     "gasUsed": "34681",
     "successful": true,

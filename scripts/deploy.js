@@ -136,6 +136,7 @@ async function deployAll(
   useRealDorgAccounts,
   deployRepToken,
   hardcodedRepTokenAddress,
+  transferToAllDorgHolders,
   verbose)
 {
   await loadSigners()
@@ -313,7 +314,6 @@ async function deployAll(
 
   if (useRealDorgAccounts) {
     let dOrgMembers = await readCSVAsync("./data/dorgholders.csv")
-    console.log('dOrgMembers', dOrgMembers[0])
     for (let n=0; n<dOrgMembers.length; n++) {
       memberAccount = dOrgMembers[n]["HolderAddress"]
       memberRepAmount = oneETH.mul(parseInt(dOrgMembers[n]["Balance"]))
@@ -401,25 +401,28 @@ async function deployAll(
     console.log("Account " + richSigner.address + " has " + hre.ethers.utils.formatEther(balance))
     console.log("She should transfer about this much to each account: " + hre.ethers.utils.formatEther(donation))
 
-    AnotherFunctionName = "transfer"
-    try {
-      let totalGas = hre.ethers.BigNumber.from("0");
-      for (let i=0; i<initialMembers.length; i++) {
-        if (initialMembers[i] == richSigner.address){
-          continue
+    if (transferToAllDorgHolders){
+
+      AnotherFunctionName = "transfer"
+      try {
+        let totalGas = hre.ethers.BigNumber.from("0");
+        for (let i=0; i<initialMembers.length; i++) {
+          if (initialMembers[i] == richSigner.address){
+            continue
+          }
+          tx = await defaultPaymentToken.connect(richSigner).transfer(initialMembers[i], donation);
+          receipt = await tx.wait()
+          let balance = await defaultPaymentToken.balanceOf(initialMembers[i])
+          console.log("Account " + initialMembers[i] + " has " + balance.toString())
+          totalGas = totalGas.add(receipt.gasUsed)
         }
-        tx = await defaultPaymentToken.connect(richSigner).transfer(initialMembers[i], donation);
-        receipt = await tx.wait()
-        let balance = await defaultPaymentToken.balanceOf(initialMembers[i])
-        console.log("Account " + initialMembers[i] + " has " + balance.toString())
-        totalGas = totalGas.add(receipt.gasUsed)
+        errorMessage = "None"
+        updateDeployInfo(contractName, AnotherFunctionName, defaultPaymentToken.address, totalGas.toString(), true, errorMessage, newContract, "", "", verbose)
+      } catch(err) {
+        updateDeployInfo(contractName, functionName, "None", 0, false, err.toString(), newContract, "", "", verbose)
       }
-      errorMessage = "None"
-      updateDeployInfo(contractName, AnotherFunctionName, defaultPaymentToken.address, totalGas.toString(), true, errorMessage, newContract, "", "", verbose)
-    } catch(err) {
-      updateDeployInfo(contractName, functionName, "None", 0, false, err.toString(), newContract, "", "", verbose)
+      
     }
-    
     
   } catch(err) {
     updateDeployInfo(contractName, functionName, "None", 0, false, err.toString(), newContract, "", "", verbose)
@@ -595,22 +598,39 @@ async function deployAll(
     
 
 
-    // contractName = "InternalProject"
-    // functionName = "startProject"
-    // newContract = false
-    // try {
-    //   tx = await firstClientProject.connect(SIGNERS.ALICE).startProject();
-    //   receipt = await tx.wait()
-    //   errorMessage = "None"
-    //   updateDeployInfo(contractName, functionName, source.address, receipt.gasUsed.toString(), true, errorMessage, newContract, "", "", verbose)
-    //   let newstatus = ProjectStatus[(await firstClientProject.status())]
-    //   if (verbose){
-    //     console.log(`The current status is ${newstatus}.`)
-    //   }
+    contractName = "InternalProject"
+    functionName = "createInternalProject"
+    newContract = true
+    try {
+      let _requestedAmounts = oneETH.mul(4180)
+      let _requestedMaxAmountPerPaymentCycle = oneETH.mul(105);
+      tx = await source.connect(SIGNERS.ALICE).createInternalProject(
+        _requestedAmounts,
+        _requestedMaxAmountPerPaymentCycle
+      );
+      receipt = await tx.wait()
+      errorMessage = "None"
+
+      let internalProjectAddress = await source.internalProjects(0);
+    
+      let votingDuration = (await source.initialVotingDuration()).toNumber()
+      let paymentInterval = (await source.paymentInterval()).toNumber()
+      deployInfo["deploymentVariables"][internalProjectAddress] = {
+        "name": "InternalProject",
+        "variables": [
+          `"${source.address}"`,
+          `"${SIGNERS.ALICE.address}"`,
+          `"${votingAddress}"`,
+          `${votingDuration}`,
+          `${paymentInterval}`,
+          `"${_requestedAmounts.toString()}"`,
+          `"${_requestedMaxAmountPerPaymentCycle.toString()}"`]}
+      errorMessage = "None"
+      updateDeployInfo(contractName, functionName, source.address, receipt.gasUsed.toString(), true, errorMessage, newContract, "firstInternalProject", internalProjectAddress, verbose)
         
-    // } catch(err) {
-    //   updateDeployInfo(contractName, functionName, "None", 0, false, err.toString(), newContract, "", "", verbose)
-    // }
+    } catch(err) {
+      updateDeployInfo(contractName, functionName, "None", 0, false, err.toString(), newContract, "", "", verbose)
+    }
     
 
   }
@@ -677,6 +697,7 @@ deployAll(
   deployParameters.useRealDorgAccounts,
   deployParameters.deployRepToken,
   deployParameters.RepTokenAddress,
+  deployParameters.transferToAllDorgHolders,
   deployParameters.verbose)
 
 

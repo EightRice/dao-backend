@@ -60,7 +60,7 @@ contract Source is Poll, GasRefunds, HandlesRepToken, DAOMembership, DAOPaymentC
     mapping(address=>bool) _isProject;
 
     uint256 public initialVotingDuration = 300; //  change to 300 s for demo; // 1 weeks;
-    uint256 public paymentInterval;
+    uint256 public paymentInterval = 300;
     uint120 public defaultPermilleThreshold = 500;  // 50 percent
     uint256 public payoutRep = 100 * (10 ** 18);
     uint40 public defaultVotingDuration = uint40(50);
