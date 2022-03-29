@@ -72,9 +72,9 @@ contract Source is Poll, GasRefunds, HandlesRepToken, DAOMembership, DAOPaymentC
     event Payment(uint256 amount, uint256 repAmount);
 
     /* ========== CONSTRUCTOR ========== */
-    constructor (address votingContract){
+    constructor (address votingContract, address repTokenAddress){
         
-        repToken = IRepToken(address(new RepToken("DORG", "DORG")));
+        repToken = IRepToken(repTokenAddress);
         voting = IVoting(votingContract);
         // _importMembers(initialMembers, initialRep);
         arbitrationEscrow = new ArbitrationEscrow();
@@ -96,7 +96,7 @@ contract Source is Poll, GasRefunds, HandlesRepToken, DAOMembership, DAOPaymentC
 
     function _importMembers(address[] memory initialMembers,uint256[] memory initialRep) internal{
         // only once!
-        require(initialMembers.length==initialRep.length);
+        require(initialMembers.length==initialRep.length, "members and rep allocation dont match.");
         for (uint256 i=0; i< initialMembers.length; i++){
             repToken.mint(initialMembers[i], initialRep[i]);
         }

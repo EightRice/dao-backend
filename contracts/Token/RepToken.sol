@@ -31,11 +31,14 @@ interface IRepToken {
     function totalSupply() external view returns (uint256);
 
     function changeDAO(address newDAO) external;
+
+    function revokeOwnershipWithoutReplacement() external;
 }
 
 
 
 contract RepToken is ERC20 {
+    address public owner;
     address public DAO;
     // add top 7 holders only for the case that transfers are disabled
 
@@ -44,7 +47,7 @@ contract RepToken is ERC20 {
     
     constructor(string memory name, string memory symbol) ERC20 (name, symbol)  {
         // _mint(msg.sender, initialSupply);
-        DAO = msg.sender;
+        owner = msg.sender;
     }
 
 
@@ -58,21 +61,34 @@ contract RepToken is ERC20 {
         
     }
 
-    function mint(address holder, uint256 amount) external onlyDAO() {
+    function mint(address holder, uint256 amount) external onlyDAO {
         _mint(holder, amount);
         
     } 
 
-    function burn(address holder, uint256 amount) external onlyDAO() {
+    function burn(address holder, uint256 amount) external onlyDAO {
         _burn(holder, amount);
     }
 
-    function changeDAO(address newDAO) external onlyDAO {
+    function changeDAO(address newDAO) external onlyDAOorOwner {
         DAO = newDAO;
     }
 
+    function revokeOwnershipWithoutReplacement() external onlyDAOorOwner {
+        owner = address(0x0);
+    }
+
+    function getDAO() external view returns(address){
+        return DAO;
+    }
+
     modifier onlyDAO() {
-        require(msg.sender==DAO);
+        require(msg.sender==DAO, "only DAO");
+        _;
+    }
+
+    modifier onlyDAOorOwner {
+        require(msg.sender==owner || msg.sender==DAO, "only DAO or Owner");
         _;
     }
 }

@@ -3,6 +3,7 @@
 const hre = require("hardhat");
 const fs = require('fs');
 const csv = require('csv-parser')
+const deployParameters = require("./deploymentParameters.js")
 
 const SIGNERS = {
   ALICE: null,
@@ -31,7 +32,9 @@ let deployInfo = {
   "deploymentVariables": new Object()
 }
 
+let ZeroAddress = "0x0000000000000000000000000000000000000000"
 let STANDARD_INITIAL_VOTING_DURATION = 300 // in seconds
+let oneETH = hre.ethers.utils.parseEther("1.0")
 
 let tx = null
 let deployTx = null
@@ -131,6 +134,8 @@ async function deployAll(
   withClientProjectCreation,
   TypicalMiningDurationInSec,
   useRealDorgAccounts,
+  deployRepToken,
+  hardcodedRepTokenAddress,
   verbose)
 {
   await loadSigners()
@@ -141,14 +146,14 @@ async function deployAll(
   newContract = true
   try {
     TestPaymentTokenFactory = await hre.ethers.getContractFactory(contractName);
-    deploymentArgs = ["Mock DAI", "DAI"]
-    DAICoin = await TestPaymentTokenFactory.connect(SIGNERS.ALICE).deploy(deploymentArgs[0], deploymentArgs[1]); 
-    deployInfo["deploymentVariables"][DAICoin.address] = {
+    deploymentArgs = ["Mock USDC with 18 decimals", "USDC"]
+    USDCCoin = await TestPaymentTokenFactory.connect(SIGNERS.ALICE).deploy(deploymentArgs[0], deploymentArgs[1]); 
+    deployInfo["deploymentVariables"][USDCCoin.address] = {
       "name": contractName,
-      "variables": ['"Mock DAI"', '"DAI"']}
-    deployTx = await DAICoin.deployTransaction.wait()
+      "variables": ['"Mock USDC with 18 decimals"', '"USDC"']}
+    deployTx = await USDCCoin.deployTransaction.wait()
     errorMessage = "None"
-    updateDeployInfo(contractName, functionName, DAICoin.address, deployTx.gasUsed.toString(), true, errorMessage, newContract, contractName, DAICoin.address, verbose)
+    updateDeployInfo(contractName, functionName, USDCCoin.address, deployTx.gasUsed.toString(), true, errorMessage, newContract, contractName, USDCCoin.address, verbose)
     
   } catch(err) {
     updateDeployInfo(contractName, functionName, "None", 0, false, err.toString(), newContract, "", "", verbose)
@@ -208,22 +213,60 @@ async function deployAll(
     updateDeployInfo(contractName, functionName, "None", 0, false, err.toString(), newContract, "", "", verbose)
   }
 
+  if (deployRepToken){
+
+
+      // Deploy RepToken
+    contractName = "RepToken"
+    functionName = "constructor"
+    newContract = true
+    try {
+      deploymentArgs = ["dOrg Reputation Token", "dOrg"]
+
+      RepTokenFactory = await hre.ethers.getContractFactory(contractName);
+      repToken = await RepTokenFactory.connect(SIGNERS.ALICE).deploy(deploymentArgs[0], deploymentArgs[1])
+      
+      deployInfo["deploymentVariables"][repToken.address] = {
+        "name": "RepToken",
+        "variables": [`"${deploymentArgs[0]}"`, `"${deploymentArgs[1]}"`]}
+      
+      deployTx = await repToken.deployTransaction.wait()
+      errorMessage = "None"
+      updateDeployInfo(contractName, functionName, repToken.address, deployTx.gasUsed.toString(), true, errorMessage, newContract, "RepToken", repToken.address, verbose)
+    } catch(err) {
+      updateDeployInfo(contractName, functionName, "None", 0, false, err.toString(), newContract, "", "", verbose)
+    }
+  }
+
+  
+
   // Deploy Source 
   contractName = "Source"
   functionName = "constructor"
   newContract = true
   try {
-    votingAddress = ""
+    votingAddress = ZeroAddress
     if (deployInfo["contracts"]["Voting"]) {
       votingAddress = deployInfo["contracts"]["Voting"];
     }
     SourceFactory = await hre.ethers.getContractFactory(contractName);
-    deploymentArgs = [votingAddress]
-    source = await SourceFactory.connect(SIGNERS.ALICE).deploy(deploymentArgs[0])
+    repTokenAddress = ZeroAddress
+    if (deployRepToken){
+      if (deployInfo["contracts"]["RepToken"]){
+        repTokenAddress = deployInfo["contracts"]["RepToken"];
+      }
+    } else {
+      repTokenAddress = hardcodedRepTokenAddress
+      // also update the contracts info
+      updateDeployInfo("RepToken", "Already Deployed", repTokenAddress, 0, true, errorMessage, true, "RepToken", repTokenAddress, verbose)
+    }
+
+    deploymentArgs = [votingAddress, repTokenAddress]
+    source = await SourceFactory.connect(SIGNERS.ALICE).deploy(deploymentArgs[0], deploymentArgs[1])
     
     deployInfo["deploymentVariables"][source.address] = {
       "name": contractName,
-      "variables": [`"${votingAddress}"`]}
+      "variables": [`"${deploymentArgs[0]}"`, `"${deploymentArgs[1]}"`]}
   
    deployTx = await source.deployTransaction.wait()
    errorMessage = "None"
@@ -232,7 +275,37 @@ async function deployAll(
     updateDeployInfo(contractName, functionName, "None", 0, false, err.toString(), newContract, "", "", verbose)
   }
 
-  // add initial TokenHolders
+  // attach repToken 
+  contractName = "RepToken"
+  functionName = "changeDAO"
+  newContract = false
+  try {
+    
+    repTokenContract = new Object()
+    if (deployRepToken) {
+      repTokenContract = await hre.ethers.getContractAt(contractName, deployInfo["contracts"][contractName], SIGNERS.ALICE);
+    } else {
+      repTokenContract = await hre.ethers.getContractAt(contractName, hardcodedRepTokenAddress, SIGNERS.ALICE);
+    }
+
+
+    // console.log('repContact',repTokenContract)
+    tx = await repTokenContract.changeDAO(
+      source.address
+    )
+
+
+    receipt = await tx.wait()
+    errorMessage = "None"
+    repTokenDAO = await repTokenContract.getDAO();
+    if (verbose) {
+      console.log(`The DAO attribute of the RepToken is set to ${repTokenDAO}. The DAO address is ${source.address}`)
+    }
+    updateDeployInfo(contractName, functionName, repTokenContract.address, receipt.gasUsed.toString(), true, errorMessage, newContract, "", "", verbose)
+  } catch(err) {
+    updateDeployInfo(contractName, functionName, "None", 0, false, err.toString(), newContract, "", "",  verbose)
+  }
+
   let initialMembers = [SIGNERS.ALICE.address, SIGNERS.BOB.address, SIGNERS.CHARLIE.address]
   let oneETH = hre.ethers.BigNumber.from("1000000000000000000").mul(1)
   let initialRep = Array(initialMembers.length).fill(oneETH)
@@ -245,33 +318,38 @@ async function deployAll(
     }
   }
   
+  
+  if (deployRepToken) {
 
-  contractName = "Source"
-  functionName = "importMembers"
-  newContract = false
-  try {
-    tx = await source.connect(SIGNERS.ALICE).importMembers(
-      initialMembers,
-      initialRep
-    )
-    receipt = await tx.wait()
-    errorMessage = "None"
-    updateDeployInfo(contractName, functionName, source.address, receipt.gasUsed.toString(), true, errorMessage, newContract, "", "", verbose)
-  } catch(err) {
-    updateDeployInfo(contractName, functionName, "None", 0, false, err.toString(), newContract, "", "",  verbose)
+    contractName = "Source"
+    functionName = "importMembers"
+    newContract = false
+    // add initial TokenHolders
+    
+
+    try {
+      tx = await source.connect(SIGNERS.ALICE).importMembers(
+        initialMembers,
+        initialRep
+      )
+      receipt = await tx.wait()
+      errorMessage = "None"
+      updateDeployInfo(contractName, functionName, source.address, receipt.gasUsed.toString(), true, errorMessage, newContract, "", "", verbose)
+    } catch(err) {
+      updateDeployInfo(contractName, functionName, "None", 0, false, err.toString(), newContract, "", "",  verbose)
+    }
   }
   
 
   contractName = "Source"
   functionName = "repToken Attribute View"
-  newContract = true
+  newContract = false
   try {
     let repAddress = await source.repToken();
+    if (verbose){
+      console.log("The repToken is deployed at ", repAddress)
+    }
     errorMessage = "None"
-    deploymentArgs = ["DORG", "DORG"]
-    deployInfo["deploymentVariables"][repAddress] = {
-      "name": "RepToken",
-      "variables": ['"DORG"', '"DORG"']}
     updateDeployInfo(contractName, functionName, source.address, 0, true, errorMessage, newContract, "RepToken", repAddress, verbose)
   } catch(err) {
     updateDeployInfo(contractName, functionName, "None", 0, false, err.toString(), newContract, "", "", verbose)
@@ -348,7 +426,7 @@ async function deployAll(
   newContract = false
   try {
     let oneETH = hre.ethers.BigNumber.from("1000000000000000000").mul(1)
-    tx = await source.connect(SIGNERS.ALICE).addPaymentToken(DAICoin.address, oneETH)
+    tx = await source.connect(SIGNERS.ALICE).addPaymentToken(USDCCoin.address, oneETH)
     receipt = await tx.wait()
     errorMessage = "None"
     updateDeployInfo(contractName, functionName, source.address, receipt.gasUsed.toString(), true, errorMessage, newContract, "", "", verbose)
@@ -363,7 +441,7 @@ async function deployAll(
   functionName = "setDefaultPaymentToken"
   newContract = false
   try {
-    tx = await source.setDefaultPaymentToken(DAICoin.address)
+    tx = await source.setDefaultPaymentToken(USDCCoin.address)
     receipt = await tx.wait()
     errorMessage = "None"
     updateDeployInfo(contractName, functionName, source.address, receipt.gasUsed.toString(), true, errorMessage, newContract, "", "", verbose)
@@ -555,17 +633,26 @@ async function deployAll(
   
 }
 
-let useRealDorgAccounts = false;
-let withClientProjectCreation = true;
-let verbose = true
-let TypicalMiningDurationInSec = 0;
-if (hre.network.name=="localhost") {
-  TypicalMiningDurationInSec = 2;
-} else {
-  TypicalMiningDurationInSec = 45;
-}
+// let deployRepToken = true
+// let hardcodedRepTokenAddress = "0x0000000000000000000000000000000000000000" 
+// let repTokenAddress = deployRepToken ? ZeroAddress:hardcodedRepTokenAddress
+// let useRealDorgAccounts = true;
+// let withClientProjectCreation = true;
+// let verbose = true
+// let TypicalMiningDurationInSec = 0;
+// if (hre.network.name=="localhost") {
+//   TypicalMiningDurationInSec = 2;
+// } else {
+//   TypicalMiningDurationInSec = 45;
+// }
 
-deployAll(withClientProjectCreation, TypicalMiningDurationInSec, useRealDorgAccounts, verbose)
+deployAll(
+  deployParameters.withClientProjectCreation,
+  deployParameters.TypicalMiningDurationInSec,
+  deployParameters.useRealDorgAccounts,
+  deployParameters.deployRepToken,
+  deployParameters.RepTokenAddress,
+  deployParameters.verbose)
 
 
 // fs.readFile("./data/dorgholders.csv", function (err, fileData) {
