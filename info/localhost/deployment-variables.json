@@ -1,50 +1,50 @@
 {
-  "0xd783669Ad0E6939ce921f4cE677daAF98f54018F": {
+  "0x0410846AaD3081092373fa95004CeDDfC28FE07c": {
     "name": "PaymentToken",
     "variables": [
       "\"Mock USDC with 18 decimals\"",
       "\"USDC\""
     ]
   },
-  "0x0838Ac039CF8c0ac28675e4dfc54597b39eC44ce": {
+  "0xf94FE1bFE9cC8a78867bE3626163a01e6560ca42": {
     "name": "ClientProjectFactory",
     "variables": []
   },
-  "0xB65b56Ce24e05df8e495C7568b7289A87Ceb5872": {
+  "0x873D7Ac66af360B80575F83bcFcaE4CA46aa22b4": {
     "name": "InternalProjectFactory",
     "variables": []
   },
-  "0x55D23bABE6ABbf21B8007BD5E234781308D7D08d": {
+  "0xCE78b9370726D5CB05932A984d00BDca3f864Ff8": {
     "name": "Voting",
     "variables": []
   },
-  "0x8A5F35eb1Bc9475b1b60742d9416db7863C26497": {
+  "0xA609eaef3aea293aD98Dc505FcE06F2D02BE6Fb4": {
     "name": "Source",
     "variables": [
-      "\"0x55D23bABE6ABbf21B8007BD5E234781308D7D08d\"",
+      "\"0xCE78b9370726D5CB05932A984d00BDca3f864Ff8\"",
       "\"0xDF8A6d7F673834617A1208409162b1C9a35B65A0\""
     ]
   },
-  "0x3fD8df7f5a43A84d6eC70c516a8bDBAa2617C077": {
+  "0x33EDa8b0001Dc81745C50c948fa02B5A0D426fe3": {
     "name": "ClientProject",
     "variables": [
-      "\"0x8A5F35eb1Bc9475b1b60742d9416db7863C26497\"",
+      "\"0xA609eaef3aea293aD98Dc505FcE06F2D02BE6Fb4\"",
       "\"0x41923d8c6053517b9C5ABe4e2b506A26946771d4\"",
       "\"0x21ce0c2a2e93598D4B5C9D2063a83846Ee1296AE\"",
       "\"0xBe0b5E62952b110e92a8C67baD4FBe5321C7d678\"",
       "\"0xDF8A6d7F673834617A1208409162b1C9a35B65A0\"",
-      "\"0x08a8C91F069339a28D9DfD27cCAA5e8deC8Fa6eB\"",
-      "\"0x55D23bABE6ABbf21B8007BD5E234781308D7D08d\"",
-      "\"0xd783669Ad0E6939ce921f4cE677daAF98f54018F\"",
+      "\"0x41eCb1cF07014F31325dAd5482ce880d579A5F5c\"",
+      "\"0xCE78b9370726D5CB05932A984d00BDca3f864Ff8\"",
+      "\"0x0410846AaD3081092373fa95004CeDDfC28FE07c\"",
       "2"
     ]
   },
-  "0x510B5C3A69A66d238A3b096F39D9C7a5CC59BF50": {
+  "0x1bbf1cab3F680C340e19eEd2aE06Eff5F3443DC6": {
     "name": "InternalProject",
     "variables": [
-      "\"0x8A5F35eb1Bc9475b1b60742d9416db7863C26497\"",
+      "\"0xA609eaef3aea293aD98Dc505FcE06F2D02BE6Fb4\"",
       "\"0x41923d8c6053517b9C5ABe4e2b506A26946771d4\"",
-      "\"0x55D23bABE6ABbf21B8007BD5E234781308D7D08d\"",
+      "\"0xCE78b9370726D5CB05932A984d00BDca3f864Ff8\"",
       "2",
       "0",
       "\"4180000000000000000000\"",
