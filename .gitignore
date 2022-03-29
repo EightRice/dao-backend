@@ -15,3 +15,8 @@ artifacts/*
 
 # python scripts
 *.py
+
+*contracts.json
+*contract-list.json
+*deployment-contract-calls*
+*deployment-variables.json

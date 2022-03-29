@@ -307,15 +307,21 @@ async function deployAll(
   }
 
   let initialMembers = [SIGNERS.ALICE.address, SIGNERS.BOB.address, SIGNERS.CHARLIE.address]
+  // initialMembers.push()
   let oneETH = hre.ethers.BigNumber.from("1000000000000000000").mul(1)
   let initialRep = Array(initialMembers.length).fill(oneETH)
 
   if (useRealDorgAccounts) {
-    let dOrgMembers = readCSVAsync("./data/dorgholders.csv")
-    for (let n=0; n<dOrgMembers; n++) {
-      initialMembers.push(dOrgMembers[n]["HolderAddress"])
-      initialRep.push(oneDorg.mul(parseFloat(dOrgMembers[n]["Balance"])))
+    let dOrgMembers = await readCSVAsync("./data/dorgholders.csv")
+    console.log('dOrgMembers', dOrgMembers[0])
+    for (let n=0; n<dOrgMembers.length; n++) {
+      memberAccount = dOrgMembers[n]["HolderAddress"]
+      memberRepAmount = oneETH.mul(parseInt(dOrgMembers[n]["Balance"]))
+      initialMembers.push(memberAccount)
+      initialRep.push(memberRepAmount)
+      // console.log(`The Account is ${memberAccount} and the amount is ${memberRepAmount}`)
     }
+    // console.log(initialRep)
   }
   
   
@@ -328,6 +334,7 @@ async function deployAll(
     
 
     try {
+      // console.log('initialRep', initialRep)
       tx = await source.connect(SIGNERS.ALICE).importMembers(
         initialMembers,
         initialRep

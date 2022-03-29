@@ -1,48 +1,48 @@
 {
-  "0x2090B57aE4cC9EEDc11692617Ab75aa9C97B3097": {
+  "0xecB2625A2ebB86B085d5780BCdb55D608A8beF00": {
     "name": "PaymentToken",
     "variables": [
       "\"Mock USDC with 18 decimals\"",
       "\"USDC\""
     ]
   },
-  "0xC10c45024F544fc586D43821944BF4547DaDA5B6": {
+  "0x56834b65e01D88012c0Df2ed42cbB6780e527c7C": {
     "name": "ClientProjectFactory",
     "variables": []
   },
-  "0x048CB0509553FDA6E9Bc96132aa24BB07fA9EF88": {
+  "0x93b4AbC54bEC2AA12ff6f36b042091342Cecc36D": {
     "name": "InternalProjectFactory",
     "variables": []
   },
-  "0xC34326dCE1267fEEdCf2C701838622764d3b4687": {
+  "0x6c7Ac3DE12149a386b4da66A41b1B3951CD91687": {
     "name": "Voting",
     "variables": []
   },
-  "0xB47A9ca15968b9281f7091efe64eb063f35bA211": {
+  "0x230c1d1d9d42Ec542978908e721a5b4780001Ab2": {
     "name": "RepToken",
     "variables": [
       "\"dOrg Reputation Token\"",
       "\"dOrg\""
     ]
   },
-  "0x3baC8C61D07DBb3e62987e8B6b3E709CCf71C50d": {
+  "0x05264CB9fB20af51Bde3ae71fC1A750e979a7710": {
     "name": "Source",
     "variables": [
-      "\"0xC34326dCE1267fEEdCf2C701838622764d3b4687\"",
-      "\"0xB47A9ca15968b9281f7091efe64eb063f35bA211\""
+      "\"0x6c7Ac3DE12149a386b4da66A41b1B3951CD91687\"",
+      "\"0x230c1d1d9d42Ec542978908e721a5b4780001Ab2\""
     ]
   },
-  "0xAe0e875956c8548892227e7ceADa913d67483806": {
+  "0xbA7D6aE892b2f59161D87448895439172D0BF358": {
     "name": "ClientProject",
     "variables": [
-      "\"0x3baC8C61D07DBb3e62987e8B6b3E709CCf71C50d\"",
+      "\"0x05264CB9fB20af51Bde3ae71fC1A750e979a7710\"",
       "\"0x41923d8c6053517b9C5ABe4e2b506A26946771d4\"",
       "\"0x21ce0c2a2e93598D4B5C9D2063a83846Ee1296AE\"",
       "\"0xBe0b5E62952b110e92a8C67baD4FBe5321C7d678\"",
-      "\"0xB47A9ca15968b9281f7091efe64eb063f35bA211\"",
-      "\"0x42cD3052Bd6b63cCD4577a4c71F3Be1b1032Af90\"",
-      "\"0xC34326dCE1267fEEdCf2C701838622764d3b4687\"",
-      "\"0x2090B57aE4cC9EEDc11692617Ab75aa9C97B3097\"",
+      "\"0x230c1d1d9d42Ec542978908e721a5b4780001Ab2\"",
+      "\"0x9B580E1aC193e73E5C0EcD1b80a03e29860b9F55\"",
+      "\"0x6c7Ac3DE12149a386b4da66A41b1B3951CD91687\"",
+      "\"0xecB2625A2ebB86B085d5780BCdb55D608A8beF00\"",
       "2"
     ]
   }
