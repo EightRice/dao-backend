@@ -9,7 +9,6 @@ import "../Project/IDepartment.sol";
 import "../Factory/IClientProjectFactory.sol";
 import "../Factory/IInternalProjectFactory.sol";
 import "../Factory/IdOrgFactory.sol";
-
 import {Poll, PollStatus} from "../Voting/Poll.sol";
 import {DAOMembership} from "./Membership.sol";
 import {DAOPaymentTokens, DAOPaymentCycle} from "../Payment/DAOPayments.sol";
@@ -111,7 +110,6 @@ contract Source is Poll, GasRefunds, HandlesRepToken, DAOMembership, DAOPaymentC
     
     /* ========== PROJECT HANDLING ========== */
 
-
     function createClientProject(address payable _client, address payable _arbiter, address paymentToken)
     public
     onlyDAOMember
@@ -131,7 +129,6 @@ contract Source is Poll, GasRefunds, HandlesRepToken, DAOMembership, DAOPaymentC
         numberOfProjects += 1;
     }
 
-
     function createInternalProject(uint256 _requestedAmounts, uint256 _requestedMaxAmountPerPaymentCycle) 
     external
     onlyDAOMember
@@ -139,17 +136,15 @@ contract Source is Poll, GasRefunds, HandlesRepToken, DAOMembership, DAOPaymentC
         address projectAddress = internalProjectFactory.createInternalProject(
                                 payable(msg.sender),
                                 address(voting),
+                                address(repToken),
                                 initialVotingDuration,
                                 paymentInterval,
                                 _requestedAmounts,
                                 _requestedMaxAmountPerPaymentCycle);
-
         internalProjects.push(address(projectAddress));
         _isProject[address(projectAddress)] = true;
         numberOfDepartments += 1;
     }
-
-
 
     /* ========== GOVERNANCE ========== */
 
@@ -240,7 +235,6 @@ contract Source is Poll, GasRefunds, HandlesRepToken, DAOMembership, DAOPaymentC
     function payout()
     external 
     refundGas()
-    maySubmitPayment()
     {
         // NOTE: Think about swapping into the defaultPaymentToken.
         uint256 totalRequested = getThisCyclesTotalRequested();

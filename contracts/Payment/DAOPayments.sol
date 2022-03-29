@@ -23,12 +23,11 @@ contract DAOPaymentTokens is Poll, DAOMembership {
     bytes4 internal setDefaultPaymentTokenId = bytes4(keccak256("setDefaultPaymentToken(address)"));
     bytes4 internal removePaymentTokenId = bytes4(keccak256("removePaymentToken(address)"));
     bytes4 internal addPaymentTokenId = bytes4(keccak256("addPaymentToken(address)"));
-
+    
     address[] public paymentTokens;
     IERC20 public defaultPaymentToken;
     mapping(address => bool) _isRegisteredToken;
     mapping(address => uint256) internal conversionRate;
-
 
     // change default payment token.
     // add new payment tokens.

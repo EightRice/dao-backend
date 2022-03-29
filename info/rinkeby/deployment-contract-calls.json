@@ -1,55 +1,63 @@
 [
   {
     "contract": "PaymentToken",
-    "address": "0xe41232Ec423788163477db1E164b777C5166Db3D",
+    "address": "0x2E96A1B24859D4B8b73486199160876962129265",
     "function": "constructor",
-    "gasUsed": "1408747",
+    "gasUsed": "1408975",
     "successful": true,
     "errorMessage": "None"
   },
   {
     "contract": "ClientProjectFactory",
-    "address": "0x6D37203aC06902c07B4305a930EF4FE0099D8C44",
+    "address": "0xCf68657b8198017cb347cD1F643d43bAB7fDf492",
     "function": "constructor",
-    "gasUsed": "4251889",
+    "gasUsed": "4243029",
     "successful": true,
     "errorMessage": "None"
   },
   {
     "contract": "InternalProjectFactory",
-    "address": "0xb1B15c086A2Ec6606e28e737600a030b97d15338",
+    "address": "0xc708bbd60461A2Bc8161eAF193fc4DF856af93Cf",
     "function": "constructor",
-    "gasUsed": "2908969",
+    "gasUsed": "1826561",
     "successful": true,
     "errorMessage": "None"
   },
   {
     "contract": "Voting",
-    "address": "0xbc2B062D35283CBA59d8BFD76030C02722900B99",
+    "address": "0x95Da3A238D6f125f3986FCD008D82Cc06C49b4B1",
     "function": "constructor",
-    "gasUsed": "2908969",
+    "gasUsed": "1826561",
+    "successful": true,
+    "errorMessage": "None"
+  },
+  {
+    "contract": "RepToken",
+    "address": "0xe063419D2A32eb1BF89eC2AFE12Ad026F9773099",
+    "function": "Already Deployed",
+    "gasUsed": 0,
     "successful": true,
     "errorMessage": "None"
   },
   {
     "contract": "Source",
-    "address": "0x81E04eE02dCfB761a90E24D68964FCEc248f03Ae",
+    "address": "0x1B4128271579F3De5E5De54Ff3D06CA8A442AD96",
     "function": "constructor",
-    "gasUsed": "5106620",
+    "gasUsed": "3986874",
+    "successful": true,
+    "errorMessage": "None"
+  },
+  {
+    "contract": "RepToken",
+    "address": "0xe063419D2A32eb1BF89eC2AFE12Ad026F9773099",
+    "function": "changeDAO",
+    "gasUsed": "29219",
     "successful": true,
     "errorMessage": "None"
   },
   {
     "contract": "Source",
-    "address": "0x81E04eE02dCfB761a90E24D68964FCEc248f03Ae",
-    "function": "importMembers",
-    "gasUsed": "137857",
-    "successful": true,
-    "errorMessage": "None"
-  },
-  {
-    "contract": "Source",
-    "address": "0x81E04eE02dCfB761a90E24D68964FCEc248f03Ae",
+    "address": "0x1B4128271579F3De5E5De54Ff3D06CA8A442AD96",
     "function": "repToken Attribute View",
     "gasUsed": 0,
     "successful": true,
@@ -57,47 +65,39 @@
   },
   {
     "contract": "Source",
-    "address": "0x81E04eE02dCfB761a90E24D68964FCEc248f03Ae",
+    "address": "0x1B4128271579F3De5E5De54Ff3D06CA8A442AD96",
     "function": "setDeploymentFactories",
-    "gasUsed": "66944",
+    "gasUsed": "66900",
     "successful": true,
     "errorMessage": "None"
   },
   {
     "contract": "PaymentToken",
-    "address": "0xe41232Ec423788163477db1E164b777C5166Db3D",
+    "address": "0x2E96A1B24859D4B8b73486199160876962129265",
     "function": "freeMint",
     "gasUsed": "70947",
     "successful": true,
     "errorMessage": "None"
   },
   {
-    "contract": "PaymentToken",
-    "address": "0xe41232Ec423788163477db1E164b777C5166Db3D",
-    "function": "transfer",
-    "gasUsed": "104740",
-    "successful": true,
-    "errorMessage": "None"
-  },
-  {
     "contract": "Source",
-    "address": "0x81E04eE02dCfB761a90E24D68964FCEc248f03Ae",
+    "address": "0x1B4128271579F3De5E5De54Ff3D06CA8A442AD96",
     "function": "addPaymentToken",
-    "gasUsed": "80220",
+    "gasUsed": "94402",
     "successful": true,
     "errorMessage": "None"
   },
   {
     "contract": "Source",
-    "address": "0x81E04eE02dCfB761a90E24D68964FCEc248f03Ae",
+    "address": "0x1B4128271579F3De5E5De54Ff3D06CA8A442AD96",
     "function": "setDefaultPaymentToken",
-    "gasUsed": "46404",
+    "gasUsed": "46433",
     "successful": true,
     "errorMessage": "None"
   },
   {
     "contract": "Source",
-    "address": "0xe41232Ec423788163477db1E164b777C5166Db3D",
+    "address": "0x2E96A1B24859D4B8b73486199160876962129265",
     "function": "defaultPaymentToken Attribute View",
     "gasUsed": 0,
     "successful": true,
@@ -105,31 +105,31 @@
   },
   {
     "contract": "Source",
-    "address": "0x81E04eE02dCfB761a90E24D68964FCEc248f03Ae",
+    "address": "0x1B4128271579F3De5E5De54Ff3D06CA8A442AD96",
     "function": "changeInitialVotingDuration",
-    "gasUsed": "32490",
+    "gasUsed": "32469",
     "successful": true,
     "errorMessage": "None"
   },
   {
     "contract": "Source",
-    "address": "0x81E04eE02dCfB761a90E24D68964FCEc248f03Ae",
+    "address": "0x1B4128271579F3De5E5De54Ff3D06CA8A442AD96",
     "function": "createClientProject",
-    "gasUsed": "3964865",
+    "gasUsed": "3960615",
     "successful": true,
     "errorMessage": "None"
   },
   {
     "contract": "ClientProject",
-    "address": "0x81E04eE02dCfB761a90E24D68964FCEc248f03Ae",
+    "address": "0x1B4128271579F3De5E5De54Ff3D06CA8A442AD96",
     "function": "voteOnProject",
-    "gasUsed": "57032",
+    "gasUsed": "57010",
     "successful": true,
     "errorMessage": "None"
   },
   {
     "contract": "ClientProject",
-    "address": "0x81E04eE02dCfB761a90E24D68964FCEc248f03Ae",
+    "address": "0x1B4128271579F3De5E5De54Ff3D06CA8A442AD96",
     "function": "registerVote",
     "gasUsed": "35062",
     "successful": true,
@@ -137,17 +137,25 @@
   },
   {
     "contract": "ClientProject",
-    "address": "0x81E04eE02dCfB761a90E24D68964FCEc248f03Ae",
+    "address": "0x1B4128271579F3De5E5De54Ff3D06CA8A442AD96",
     "function": "startProject",
     "gasUsed": "28865",
     "successful": true,
     "errorMessage": "None"
   },
   {
+    "contract": "InternalProject",
+    "address": "0x1B4128271579F3De5E5De54Ff3D06CA8A442AD96",
+    "function": "createInternalProject",
+    "gasUsed": "1713484",
+    "successful": true,
+    "errorMessage": "None"
+  },
+  {
     "contract": "Source",
-    "address": "0x81E04eE02dCfB761a90E24D68964FCEc248f03Ae",
+    "address": "0x1B4128271579F3De5E5De54Ff3D06CA8A442AD96",
     "function": "changeInitialVotingDuration",
-    "gasUsed": "32502",
+    "gasUsed": "32481",
     "successful": true,
     "errorMessage": "None"
   }

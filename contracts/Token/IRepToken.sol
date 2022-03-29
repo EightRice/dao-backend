@@ -3,14 +3,11 @@ pragma solidity ^0.8.7;
 
 interface IRepToken {
     function mint(address holder, uint256 amount) external;
-
     function burn(address holder, uint256 amount) external;
-
     /**
      * @dev Returns the amount of tokens owned by `account`.
      */
     function balanceOf(address account) external view returns (uint256);
-
     
     /**
      * @dev Moves `amount` tokens from the caller's account to `recipient`.

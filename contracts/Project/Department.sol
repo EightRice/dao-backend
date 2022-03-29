@@ -28,10 +28,9 @@ contract InternalProject {
     /* ========== CONTRACT VARIABLES ========== */
 
     IVoting public voting;
-    IRepToken public repToken;
+    RepToken public repToken;
     ISource public source;
     IERC20 public paymentToken;
-
 
     uint256 public startingTime;
     uint256 public votingDuration;
@@ -41,33 +40,28 @@ contract InternalProject {
     uint256 public paymentInterval;
 
     
-    uint256 internal remainingFunds;
-    uint256 internal allowedSpendingsPerPaymentCycle;
+    uint256 public remainingFunds;
+    uint256 public allowedSpendingsPerPaymentCycle;
 
-    Payout[] payouts;
+    Payout[] public payouts;
 
     uint256 internal thisCyclesRequestedAmount;
-
-    address payable[] team;
+    address payable[] public team;
     mapping(address=>bool) _isTeamMember;
     address payable public teamLead;
-
     uint256 MILLE = 1000;
-    
     event PayrollRosterSubmitted();
 
-
-    /* ========== CONSTRUCTOR ========== */
-                
+    /* ========== CONSTRUCTOR ========== */           
 
     constructor(address _sourceAddress,
                 address payable _teamLead,
                 address _votingAddress,
+                address repTokenAddress,
                 uint256 _votingDuration,
                 uint256 _paymentInterval,
                 uint256 _requestedAmounts,
-                uint256 _requestedMaxAmountPerPaymentCycle){
-                    
+                uint256 _requestedMaxAmountPerPaymentCycle){   
         paymentInterval = _paymentInterval;
         remainingFunds = _requestedAmounts;
         allowedSpendingsPerPaymentCycle = _requestedMaxAmountPerPaymentCycle;
@@ -75,25 +69,23 @@ contract InternalProject {
         team.push(teamLead);
         _isTeamMember[teamLead] = true;
         source = ISource(_sourceAddress);
+        repToken=RepToken(repTokenAddress);
         startingTime = block.timestamp;
         votingDuration = _votingDuration;
         voting = IVoting(_votingAddress);
     }
 
 
-
-
      /* ========== VOTING  ========== */
 
-
     function voteOnProject(bool decision) external returns(bool){
-        // if the duration is less than a week, then set flag to 1
-        bool durationCondition = block.timestamp - startingTime > votingDuration;
-        bool majorityCondition = votes_pro > repToken.totalSupply() / 2 || votes_against > repToken.totalSupply() / 2;
-        if(durationCondition || majorityCondition ){ 
-            _registerVote();
-            return false;
-        }
+        // // if the duration is less than a week, then set flag to 1
+        // bool durationCondition = block.timestamp - startingTime > votingDuration;
+        // bool majorityCondition = votes_pro > repToken.totalSupply() / 2 || votes_against > repToken.totalSupply() / 2;
+        // if(durationCondition || majorityCondition ){ 
+        //     _registerVote();
+        //     return false;
+        // }
         uint256 vote = repToken.balanceOf(msg.sender);
         if (decision){
             votes_pro += vote ;// add safeMath
@@ -103,22 +95,18 @@ contract InternalProject {
         numberOfVotes += 1;
         return true;
     }
- 
 
     function registerVote() external {
-        bool durationCondition = block.timestamp - startingTime > votingDuration;
-        bool majorityCondition = votes_pro > repToken.totalSupply() / 2 || votes_against > repToken.totalSupply() / 2;
-        require(durationCondition || majorityCondition, "Voting is still ongoing");
+        // bool durationCondition = block.timestamp - startingTime > votingDuration;
+        // bool majorityCondition = votes_pro > repToken.totalSupply() / 2 || votes_against > repToken.totalSupply() / 2;
+        // require(durationCondition || majorityCondition, "Voting is still ongoing");
         _registerVote();
     }
 
 
     function _registerVote() internal {
         status = (votes_pro > votes_against) ? ProjectStatus.active : ProjectStatus.rejected ;
-        
     }
-
-
 
 
     function submitPayrollRoster(
@@ -127,6 +115,7 @@ contract InternalProject {
     external 
     onlyProjectManager
     {
+        _registerVote();
         // bool withinFirstSubmissionPeriod = block.timestamp <= source.getFirstPayrollSubmissionDue();
         // bool withinSecondSubmissionPeriod = block.timestamp > source.getVetoDue() && block.timestamp <= source.getSecondPayrollSubmissionDue();
 
@@ -134,7 +123,6 @@ contract InternalProject {
 
         require(_payees.length == _amounts.length);
 
-        
         uint256 _thisCyclesRequestedAmount;
         for (uint256 i=0; i<_payees.length; i++){
 
@@ -150,7 +138,6 @@ contract InternalProject {
         require(_thisCyclesRequestedAmount <= allowedSpendingsPerPaymentCycle);
         require(_thisCyclesRequestedAmount <= remainingFunds); 
         remainingFunds -= _thisCyclesRequestedAmount;
-
         // set requested amount for this cycle.
         thisCyclesRequestedAmount = _thisCyclesRequestedAmount;
         
