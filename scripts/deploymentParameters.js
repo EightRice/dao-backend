@@ -3,7 +3,9 @@ const hre = require('hardhat')
 let ZeroAddress = "0x0000000000000000000000000000000000000000"
 
 let deployRepToken = false
-let hardcodedRepTokenAddress = "0xe063419D2A32eb1BF89eC2AFE12Ad026F9773099" 
+let hardcodedRepTokenAddress = "0x10fE87731dd857a521990b0325cD6b8cde6e00B0" 
+let deployPaymentToken = false
+let hardcodedPaymentTokenAddress = "0xD29B912635EF2E5F0Bfd9F5dB41DBCDdBBE1426b"
 let RepTokenAddress = deployRepToken ? ZeroAddress:hardcodedRepTokenAddress
 let useRealDorgAccounts = true;
 let withClientProjectCreation = true;
@@ -22,6 +24,8 @@ module.exports = {
   useRealDorgAccounts,
   deployRepToken,
   RepTokenAddress,
+  deployPaymentToken,
+  hardcodedPaymentTokenAddress,
   transferToAllDorgHolders,
   verbose
 }

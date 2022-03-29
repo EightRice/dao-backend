@@ -107,6 +107,11 @@ contract Source is Poll, GasRefunds, HandlesRepToken, DAOMembership, DAOPaymentC
         internalProjectFactory = IInternalProjectFactory(_internalProjectFactory);
     }
     
+    event ValueReceived(address user, uint amount);
+    
+    fallback() external payable {
+        emit ValueReceived(msg.sender, msg.value);
+    }
     
     /* ========== PROJECT HANDLING ========== */
 

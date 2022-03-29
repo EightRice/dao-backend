@@ -136,28 +136,33 @@ async function deployAll(
   useRealDorgAccounts,
   deployRepToken,
   hardcodedRepTokenAddress,
+  deployPaymentToken,
+  hardcodedPaymentTokenAddress,
   transferToAllDorgHolders,
   verbose)
 {
   await loadSigners()
   
-  // Deploy PaymentToken
-  contractName = "PaymentToken"
-  functionName = "constructor"
-  newContract = true
-  try {
-    TestPaymentTokenFactory = await hre.ethers.getContractFactory(contractName);
-    deploymentArgs = ["Mock USDC with 18 decimals", "USDC"]
-    USDCCoin = await TestPaymentTokenFactory.connect(SIGNERS.ALICE).deploy(deploymentArgs[0], deploymentArgs[1]); 
-    deployInfo["deploymentVariables"][USDCCoin.address] = {
-      "name": contractName,
-      "variables": ['"Mock USDC with 18 decimals"', '"USDC"']}
-    deployTx = await USDCCoin.deployTransaction.wait()
-    errorMessage = "None"
-    updateDeployInfo(contractName, functionName, USDCCoin.address, deployTx.gasUsed.toString(), true, errorMessage, newContract, contractName, USDCCoin.address, verbose)
-    
-  } catch(err) {
-    updateDeployInfo(contractName, functionName, "None", 0, false, err.toString(), newContract, "", "", verbose)
+  if (deployPaymentToken){
+
+    // Deploy PaymentToken
+    contractName = "PaymentToken"
+    functionName = "constructor"
+    newContract = true
+    try {
+      TestPaymentTokenFactory = await hre.ethers.getContractFactory(contractName);
+      deploymentArgs = ["Mock USDC with 18 decimals", "USDC"]
+      USDCCoin = await TestPaymentTokenFactory.connect(SIGNERS.ALICE).deploy(deploymentArgs[0], deploymentArgs[1]); 
+      deployInfo["deploymentVariables"][USDCCoin.address] = {
+        "name": contractName,
+        "variables": ['"Mock USDC with 18 decimals"', '"USDC"']}
+      deployTx = await USDCCoin.deployTransaction.wait()
+      errorMessage = "None"
+      updateDeployInfo(contractName, functionName, USDCCoin.address, deployTx.gasUsed.toString(), true, errorMessage, newContract, contractName, USDCCoin.address, verbose)
+      
+    } catch(err) {
+      updateDeployInfo(contractName, functionName, "None", 0, false, err.toString(), newContract, "", "", verbose)
+    }
   }
   
   //
@@ -382,6 +387,8 @@ async function deployAll(
   defaultPaymentToken = new Object()
   if (deployInfo["contracts"][contractName]) {
     defaultPaymentToken = await hre.ethers.getContractAt(contractName, deployInfo["contracts"][contractName], SIGNERS.BOB);
+  } else {
+    defaultPaymentToken = await hre.ethers.getContractAt(contractName, hardcodedRepTokenAddress, SIGNERS.BOB);
   }
 
 
@@ -436,7 +443,9 @@ async function deployAll(
   newContract = false
   try {
     let oneETH = hre.ethers.BigNumber.from("1000000000000000000").mul(1)
-    tx = await source.connect(SIGNERS.ALICE).addPaymentToken(USDCCoin.address, oneETH)
+    let paymentTokenAddress = deployPaymentToken ? USDCCoin.address : hardcodedPaymentTokenAddress
+
+    tx = await source.connect(SIGNERS.ALICE).addPaymentToken(paymentTokenAddress, oneETH)
     receipt = await tx.wait()
     errorMessage = "None"
     updateDeployInfo(contractName, functionName, source.address, receipt.gasUsed.toString(), true, errorMessage, newContract, "", "", verbose)
@@ -451,7 +460,8 @@ async function deployAll(
   functionName = "setDefaultPaymentToken"
   newContract = false
   try {
-    tx = await source.setDefaultPaymentToken(USDCCoin.address)
+    let paymentTokenAddress = deployPaymentToken ? USDCCoin.address : hardcodedPaymentTokenAddress
+    tx = await source.setDefaultPaymentToken(paymentTokenAddress)
     receipt = await tx.wait()
     errorMessage = "None"
     updateDeployInfo(contractName, functionName, source.address, receipt.gasUsed.toString(), true, errorMessage, newContract, "", "", verbose)
@@ -493,10 +503,8 @@ async function deployAll(
     }
 
     contractName = "PaymentToken"
-    defaultPaymentTokenAddress = ""
-    if (deployInfo["contracts"][contractName]) {
-      defaultPaymentTokenAddress = deployInfo["contracts"][contractName];
-    }
+    defaultPaymentTokenAddress = deployPaymentToken ? USDCCoin.address : hardcodedPaymentTokenAddress
+
 
     // create Project
     contractName = "Source"
@@ -697,6 +705,8 @@ deployAll(
   deployParameters.useRealDorgAccounts,
   deployParameters.deployRepToken,
   deployParameters.RepTokenAddress,
+  deployParameters.deployPaymentToken,
+  deployParameters.hardcodedPaymentTokenAddress,
   deployParameters.transferToAllDorgHolders,
   deployParameters.verbose)
 
