@@ -9,7 +9,8 @@ contract InternalProjectFactory{
                                    address _votingAddress,
                                    uint256 _votingDuration,
                                    uint256 _paymentInterval,
-                                   uint256 _requestedAmounts) 
+                                   uint256 _requestedAmounts,
+                                   uint256 _requestedMaxAmountPerPaymentCycle) 
     external
     returns(address)
     {
@@ -20,7 +21,8 @@ contract InternalProjectFactory{
                                 _votingAddress,
                                 _votingDuration,
                                 _paymentInterval,
-                                _requestedAmounts));
+                                _requestedAmounts,
+                                _requestedMaxAmountPerPaymentCycle));
     }
 
 }

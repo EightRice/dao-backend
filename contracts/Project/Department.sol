@@ -65,13 +65,12 @@ contract InternalProject {
                 address _votingAddress,
                 uint256 _votingDuration,
                 uint256 _paymentInterval,
-                uint256 _requestedAmounts){
+                uint256 _requestedAmounts,
+                uint256 _requestedMaxAmountPerPaymentCycle){
                     
         paymentInterval = _paymentInterval;
         remainingFunds = _requestedAmounts;
-        allowedSpendingsPerPaymentCycle = _requestedAmounts;
-
-        status = ProjectStatus.proposal;
+        allowedSpendingsPerPaymentCycle = _requestedMaxAmountPerPaymentCycle;
         teamLead = _teamLead;
         team.push(teamLead);
         _isTeamMember[teamLead] = true;
@@ -79,12 +78,6 @@ contract InternalProject {
         startingTime = block.timestamp;
         votingDuration = _votingDuration;
         voting = IVoting(_votingAddress);
-        // use default ratio between Rep and Payment
-        // PAYMENT OPTIONS ? (A,B  or C)
-
-        // RepSplitting Options
-        // _addRepSplittingOption(uint32(250), uint32(750));
-        // _addRepSplittingOption(uint32(0), uint32(1000));
     }
 
 
@@ -122,11 +115,7 @@ contract InternalProject {
 
     function _registerVote() internal {
         status = (votes_pro > votes_against) ? ProjectStatus.active : ProjectStatus.rejected ;
-        if (status == ProjectStatus.active){
-            for (uint256 i; i<registeredPaymentTokens.length; i++){
-                source.transferToken(registeredPaymentTokens[i], address(this), funds[registeredPaymentTokens[i]]);
-            }
-        }
+        
     }
 
 

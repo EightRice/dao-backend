@@ -42,8 +42,8 @@ struct DefaultPollValues {
 contract Poll {
 
     uint256 internal THRESHOLD_BASISPOINTS = 10_000;
-    bytes4 public changeDefaultPollValuesIndexForThisMotionId = bytes4(keccak256("changeDefaultPollValuesIndexForThisMotion(bytes4,uint256)"));
-    bytes4 public addAndAdoptNewDefaultPollValuesForThisMotionId = bytes4(keccak256("addAndAdoptNewDefaultPollValuesForThisMotion(bytes4,uint256,uint256,address)"));
+    bytes4 internal changeDefaultPollValuesIndexForThisMotionId = bytes4(keccak256("changeDefaultPollValuesIndexForThisMotion(bytes4,uint256)"));
+    bytes4 internal addAndAdoptNewDefaultPollValuesForThisMotionId = bytes4(keccak256("addAndAdoptNewDefaultPollValuesForThisMotion(bytes4,uint256,uint256,address)"));
 
     DefaultPollValues[] public defaultPollValues;
     
@@ -296,7 +296,7 @@ contract Poll {
     }
 
     // currently the way that the Poll works is that it makes an external call to within the same contract (its more expensive, but this way we can track where voting implementation calls come from.)
-    function getThisCyclesTotalRequested_isVoteImplementationCall() internal view returns(bool){
+    function _isVoteImplementationCall() internal view returns(bool){
         return msg.sender == address(this);
     }
     

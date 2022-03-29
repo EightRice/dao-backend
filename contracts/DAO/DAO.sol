@@ -114,9 +114,8 @@ contract Source is Poll, GasRefunds, HandlesRepToken, DAOMembership, DAOPaymentC
 
     function createClientProject(address payable _client, address payable _arbiter, address paymentToken)
     public
-    onlyRegisteredToken(paymentToken)
-     {
-        require(!deprecated);
+    onlyDAOMember
+    {
         address projectAddress = clientProjectFactory.createClientProject(
             payable(msg.sender), 
             _client,
@@ -133,16 +132,17 @@ contract Source is Poll, GasRefunds, HandlesRepToken, DAOMembership, DAOPaymentC
     }
 
 
-    function createInternalProject(_requestedAmounts) 
+    function createInternalProject(uint256 _requestedAmounts, uint256 _requestedMaxAmountPerPaymentCycle) 
     external
+    onlyDAOMember
     {
-        require(!deprecated);
         address projectAddress = internalProjectFactory.createInternalProject(
                                 payable(msg.sender),
                                 address(voting),
                                 initialVotingDuration,
                                 paymentInterval,
-                                _requestedAmounts);
+                                _requestedAmounts,
+                                _requestedMaxAmountPerPaymentCycle);
 
         internalProjects.push(address(projectAddress));
         _isProject[address(projectAddress)] = true;

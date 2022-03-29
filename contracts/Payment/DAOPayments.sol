@@ -20,9 +20,9 @@ interface IUniswapV2Router {
 
 contract DAOPaymentTokens is Poll, DAOMembership {
     
-    bytes4 public setDefaultPaymentTokenId = bytes4(keccak256("setDefaultPaymentToken(address)"));
-    bytes4 public removePaymentTokenId = bytes4(keccak256("removePaymentToken(address)"));
-    bytes4 public addPaymentTokenId = bytes4(keccak256("addPaymentToken(address)"));
+    bytes4 internal setDefaultPaymentTokenId = bytes4(keccak256("setDefaultPaymentToken(address)"));
+    bytes4 internal removePaymentTokenId = bytes4(keccak256("removePaymentToken(address)"));
+    bytes4 internal addPaymentTokenId = bytes4(keccak256("addPaymentToken(address)"));
 
     address[] public paymentTokens;
     IERC20 public defaultPaymentToken;
@@ -133,11 +133,11 @@ struct Cycle {
 
 contract DAOPaymentCycle is Poll {
 
-    bytes4 public changePaymentIntervalId = bytes4(keccak256("changePaymentInterval(uint256)"));
-    bytes4 public changeSecondPayrollSubmissionDurationId = bytes4(keccak256("changeSecondPayrollSubmissionDuration(uint256)"));
-    bytes4 public changeVetoDurationId = bytes4(keccak256("changeVetoDuration(uint256)"));
-    bytes4 public changeTriggerPaymentDurationId = bytes4(keccak256("changeTriggerPaymentDuration(uint256)"));
-    bytes4 public resetPaymentTimerId = bytes4(keccak256("resetPaymentTimer(uint256)"));
+    bytes4 internal changePaymentIntervalId = bytes4(keccak256("changePaymentInterval(uint256)"));
+    bytes4 internal changeSecondPayrollSubmissionDurationId = bytes4(keccak256("changeSecondPayrollSubmissionDuration(uint256)"));
+    bytes4 internal changeVetoDurationId = bytes4(keccak256("changeVetoDuration(uint256)"));
+    bytes4 internal changeTriggerPaymentDurationId = bytes4(keccak256("changeTriggerPaymentDuration(uint256)"));
+    bytes4 internal resetPaymentTimerId = bytes4(keccak256("resetPaymentTimer(uint256)"));
 
 
     // NOTE: Dividing up the constants that determine the payment cycle from the 
