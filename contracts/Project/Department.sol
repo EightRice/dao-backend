@@ -50,7 +50,7 @@ contract InternalProject {
     mapping(address=>bool) _isTeamMember;
     address payable public teamLead;
     uint256 MILLE = 1000;
-    event PayrollRosterSubmitted();
+    // event PayrollRosterSubmitted();
 
     /* ========== CONSTRUCTOR ========== */           
 
@@ -105,9 +105,12 @@ contract InternalProject {
 
 
     function _registerVote() internal {
+        require(status == ProjectStatus.proposal || status == ProjectStatus.active);
         status = (votes_pro > votes_against) ? ProjectStatus.active : ProjectStatus.rejected ;
     }
 
+
+    event PayrollRosterSubmitted(address payable[] payees, uint256[] amounts);
 
     function submitPayrollRoster(
         address payable[] memory _payees,
@@ -121,7 +124,7 @@ contract InternalProject {
 
         // require(withinFirstSubmissionPeriod || withinSecondSubmissionPeriod);
 
-        require(_payees.length == _amounts.length);
+        require(_payees.length == _amounts.length, "payee length and amounts length need to match");
 
         uint256 _thisCyclesRequestedAmount;
         for (uint256 i=0; i<_payees.length; i++){
@@ -135,12 +138,13 @@ contract InternalProject {
 
         }
 
-        require(_thisCyclesRequestedAmount <= allowedSpendingsPerPaymentCycle);
-        require(_thisCyclesRequestedAmount <= remainingFunds); 
+        require(_thisCyclesRequestedAmount <= allowedSpendingsPerPaymentCycle, "requested amount supersedes cycle allowance");
+        require(_thisCyclesRequestedAmount <= remainingFunds, "requested amount supersedes remaining funds"); 
         remainingFunds -= _thisCyclesRequestedAmount;
         // set requested amount for this cycle.
         thisCyclesRequestedAmount = _thisCyclesRequestedAmount;
         
+        emit PayrollRosterSubmitted(_payees, _amounts);
         // emit PayrollRosterSubmitted();  // maybe milestones[milestoneIndex].payrollVetoDeadline
     }
 

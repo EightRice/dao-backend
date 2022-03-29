@@ -1,9 +1,9 @@
 {
-  "ClientProjectFactory": "0xd459e6C159BfE489FDAAFEc25eB5acC0c3EE430a",
-  "InternalProjectFactory": "0x0ab2D71b20fecB7815e7d77ceb2a4e4835A7a259",
-  "Voting": "0x69436739E6Ca19EE146e736b2F2414Ab0CfA2Fdc",
+  "ClientProjectFactory": "0x998dFa1f91ACeA054ba5CDe3FC21aD6E999B106B",
+  "InternalProjectFactory": "0xC362F3A9938ffD74ed8982cAbb555605330069DD",
+  "Voting": "0x7B38c8c0e8Fe76ae2e992eB34583d1539C8847E3",
   "RepToken": "0x10fE87731dd857a521990b0325cD6b8cde6e00B0",
-  "Source": "0x5cb06433Af35eE4FDE983BD796b44850fD595d0c",
-  "clientProjectNumberOne": "0xf25E37b3cCd68AC57fb3EF4A7fc4e86Ba9c62752",
-  "firstInternalProject": "0x69F1991758E5F0C1f41E3eBcad91Fc4aDCfB843A"
+  "Source": "0xF8B93F70bE353987C13231e8CD926a3980f574D8",
+  "clientProjectNumberOne": "0x36f6A86C6d9bC2B858a06Fc792a30ec52192fE7e",
+  "firstInternalProject": "0x6826d5832E884B23CD4c9f34f8F4d023bD271Dd2"
 }

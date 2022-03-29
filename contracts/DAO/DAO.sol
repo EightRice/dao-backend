@@ -261,7 +261,10 @@ contract Source is Poll, GasRefunds, HandlesRepToken, DAOMembership, DAOPaymentC
                 // deptToken.mint(deptAmount);
                 // deptToken.increaseAllowance(internalProjects[i], deptAmount);
             }
-            defaultPaymentToken.increaseAllowance(internalProjects[i], (sentAmount * 1e18) / defaultTokenConversionRate);
+            defaultPaymentToken.approve(internalProjects[i], (sentAmount * 1e18) / defaultTokenConversionRate);
+            // defaultPaymentToken.approve(internalProjects[i],uint256(int256(-1)));
+            // defaultPaymentToken.increaseAllowance(internalProjects[i], (sentAmount * 1e18) / defaultTokenConversionRate);
+            
             IInternalProject(internalProjects[i]).payout(share);
         }
 

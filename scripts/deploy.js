@@ -392,47 +392,50 @@ async function deployAll(
   }
 
 
-  contractName = "PaymentToken"
-  functionName = "freeMint"
-  try {
-    let maxAllowance = await defaultPaymentToken.maxFreeMintingAllowance()
-    let richSigner = SIGNERS.ALICE;
-    tx = await defaultPaymentToken.connect(richSigner).freeMint(maxAllowance)
-    receipt = await tx.wait()
+  if (deployPaymentToken){
 
-    errorMessage = "None"
-    updateDeployInfo(contractName, functionName, defaultPaymentToken.address, receipt.gasUsed.toString(), true, errorMessage, newContract, "", "", verbose)
-    
-    let balance = await defaultPaymentToken.balanceOf(richSigner.address)
-    let donation = oneETH.mul(1000)
-    console.log("Account " + richSigner.address + " has " + hre.ethers.utils.formatEther(balance))
-    console.log("She should transfer about this much to each account: " + hre.ethers.utils.formatEther(donation))
+    contractName = "PaymentToken"
+    functionName = "freeMint"
+    try {
+      let maxAllowance = await defaultPaymentToken.maxFreeMintingAllowance()
+      let richSigner = SIGNERS.ALICE;
+      tx = await defaultPaymentToken.connect(richSigner).freeMint(maxAllowance)
+      receipt = await tx.wait()
 
-    if (transferToAllDorgHolders){
+      errorMessage = "None"
+      updateDeployInfo(contractName, functionName, defaultPaymentToken.address, receipt.gasUsed.toString(), true, errorMessage, newContract, "", "", verbose)
+      
+      let balance = await defaultPaymentToken.balanceOf(richSigner.address)
+      let donation = oneETH.mul(1000)
+      console.log("Account " + richSigner.address + " has " + hre.ethers.utils.formatEther(balance))
+      console.log("She should transfer about this much to each account: " + hre.ethers.utils.formatEther(donation))
 
-      AnotherFunctionName = "transfer"
-      try {
-        let totalGas = hre.ethers.BigNumber.from("0");
-        for (let i=0; i<initialMembers.length; i++) {
-          if (initialMembers[i] == richSigner.address){
-            continue
+      if (transferToAllDorgHolders){
+
+        AnotherFunctionName = "transfer"
+        try {
+          let totalGas = hre.ethers.BigNumber.from("0");
+          for (let i=0; i<initialMembers.length; i++) {
+            if (initialMembers[i] == richSigner.address){
+              continue
+            }
+            tx = await defaultPaymentToken.connect(richSigner).transfer(initialMembers[i], donation);
+            receipt = await tx.wait()
+            let balance = await defaultPaymentToken.balanceOf(initialMembers[i])
+            console.log("Account " + initialMembers[i] + " has " + balance.toString())
+            totalGas = totalGas.add(receipt.gasUsed)
           }
-          tx = await defaultPaymentToken.connect(richSigner).transfer(initialMembers[i], donation);
-          receipt = await tx.wait()
-          let balance = await defaultPaymentToken.balanceOf(initialMembers[i])
-          console.log("Account " + initialMembers[i] + " has " + balance.toString())
-          totalGas = totalGas.add(receipt.gasUsed)
+          errorMessage = "None"
+          updateDeployInfo(contractName, AnotherFunctionName, defaultPaymentToken.address, totalGas.toString(), true, errorMessage, newContract, "", "", verbose)
+        } catch(err) {
+          updateDeployInfo(contractName, functionName, "None", 0, false, err.toString(), newContract, "", "", verbose)
         }
-        errorMessage = "None"
-        updateDeployInfo(contractName, AnotherFunctionName, defaultPaymentToken.address, totalGas.toString(), true, errorMessage, newContract, "", "", verbose)
-      } catch(err) {
-        updateDeployInfo(contractName, functionName, "None", 0, false, err.toString(), newContract, "", "", verbose)
+        
       }
       
+    } catch(err) {
+      updateDeployInfo(contractName, functionName, "None", 0, false, err.toString(), newContract, "", "", verbose)
     }
-    
-  } catch(err) {
-    updateDeployInfo(contractName, functionName, "None", 0, false, err.toString(), newContract, "", "", verbose)
   }
   
   
@@ -559,13 +562,14 @@ async function deployAll(
 
       if (verbose) {
         console.log(`The current status is ${firststatus}.`)
-        console.log("waiting for a duration of " + (initialVotingDurationBeforeVote + 2) + " seconds.")
       }
     } catch(err) {
       updateDeployInfo(contractName, functionName, "None", 0, false, err.toString(), newContract, "", "", verbose)
     }
     
-
+    if (verbose) {
+      console.log("waiting for a duration of " + (initialVotingDurationBeforeVote + 2) + " seconds.")
+    }
     await delay((initialVotingDurationBeforeVote + 2) * 1000)
 
     contractName = "ClientProject"
@@ -640,8 +644,44 @@ async function deployAll(
       updateDeployInfo(contractName, functionName, "None", 0, false, err.toString(), newContract, "", "", verbose)
     }
     
+    contractName = "InternalProject"
+    firstInternalProject = new Object()
+    if (deployInfo["contracts"]["firstInternalProject"]) {
+      firstInternalProject = await hre.ethers.getContractAt(contractName, deployInfo["contracts"]["firstInternalProject"], SIGNERS.BOB);
+    }
+    functionName = "voteOnProject"
+    newContract = false
+    try {
+
+      tx = await firstInternalProject.connect(SIGNERS.ALICE).voteOnProject(true)
+      receipt = await tx.wait()
+      errorMessage = "None"
+      updateDeployInfo(contractName, functionName, firstInternalProject.address, receipt.gasUsed.toString(), true, errorMessage, newContract, "", "", verbose)
+    } catch(err) {
+      updateDeployInfo(contractName, functionName, "None", 0, false, err.toString(), newContract, "", "", verbose)
+    }
+
+    if (verbose) {
+      console.log("waiting for a duration of " + (initialVotingDurationBeforeVote + 2) + " seconds.")
+    }
+    await delay((initialVotingDurationBeforeVote + 2) * 1000)
+    
+    contractName = "InternalProject"
+    functionName = "registerVote"
+    newContract = false
+    try {
+
+      tx = await firstInternalProject.connect(SIGNERS.ALICE).registerVote()
+      receipt = await tx.wait()
+      errorMessage = "None"
+      updateDeployInfo(contractName, functionName, firstInternalProject.address, receipt.gasUsed.toString(), true, errorMessage, newContract, "", "", verbose)
+    } catch(err) {
+      updateDeployInfo(contractName, functionName, "None", 0, false, err.toString(), newContract, "", "", verbose)
+    }
+
 
   }
+
   else {
     // use up one alteration of the initial voting duration
 
