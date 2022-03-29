@@ -289,6 +289,14 @@ contract ClientProject{
         _releaseMilestoneFunds(milestoneIndex);
     }
 
+    function getMilestonePayees(uint256 milestoneIndex) external view returns(address payable[] memory){
+        return milestones[milestoneIndex].payees;
+    }
+
+    function getMilestonePayments(uint256 milestoneIndex) external view returns(uint256 [] memory){
+        return milestones[milestoneIndex].payments;
+    }
+
 
     /* ========== PAYMENTS HANDLING ========== */
 
