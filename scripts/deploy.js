@@ -586,6 +586,24 @@ async function deployAll(
       updateDeployInfo(contractName, functionName, "None", 0, false, err.toString(), newContract, "", "", verbose)
     }
     
+
+
+    // contractName = "InternalProject"
+    // functionName = "startProject"
+    // newContract = false
+    // try {
+    //   tx = await firstClientProject.connect(SIGNERS.ALICE).startProject();
+    //   receipt = await tx.wait()
+    //   errorMessage = "None"
+    //   updateDeployInfo(contractName, functionName, source.address, receipt.gasUsed.toString(), true, errorMessage, newContract, "", "", verbose)
+    //   let newstatus = ProjectStatus[(await firstClientProject.status())]
+    //   if (verbose){
+    //     console.log(`The current status is ${newstatus}.`)
+    //   }
+        
+    // } catch(err) {
+    //   updateDeployInfo(contractName, functionName, "None", 0, false, err.toString(), newContract, "", "", verbose)
+    // }
     
 
   }
