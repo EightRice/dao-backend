@@ -116,7 +116,7 @@ contract InternalProject {
         address payable[] memory _payees,
         uint256[] memory _amounts) 
     external 
-    onlyProjectManager
+    
     {
         _registerVote();
         // bool withinFirstSubmissionPeriod = block.timestamp <= source.getFirstPayrollSubmissionDue();
@@ -207,7 +207,7 @@ contract InternalProject {
     }
 
     modifier onlyProjectManager {
-        require(msg.sender==teamLead, "only DAO");
+        require(msg.sender==teamLead, "only Project Manager");
         _;
     }
 
