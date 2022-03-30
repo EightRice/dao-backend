@@ -8,6 +8,7 @@
     "compile": "npx hardhat compile",
     "getGanache": "node scripts/getGanache.js",
     "deploy": "node scripts/deploy.js",
+    "internalProjectTest": "node scripts/internalProjectTest.js", 
     "verify": "node scripts/verify.js", 
     "compile-deploy-verify": "npx hardhat compile && node scripts/deploy.js && node scripts/verify.js",
     "compile-deploy": "npx hardhat compile && node scripts/deploy.js"

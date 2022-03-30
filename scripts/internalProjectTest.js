@@ -18,6 +18,8 @@ async function loadSigners () {
 let tx;
 let receipt;
 let oneETH = hre.ethers.utils.parseEther("1.0");
+let transferAmount = oneETH.mul(100000)
+let payrollAmount = oneETH.mul(420);
 
 async function checkInternal(){
     await loadSigners();
@@ -43,9 +45,9 @@ async function checkInternal(){
                  No amount has been requested yet, so this cylce's requested amounts are ${thisCyclesRequestedAmount}`)
 
     let teamLead = await internalProject.teamLead();
-    console.log('teamLead', teamLead)
+    console.log('\nteamLead', teamLead)
     // console.log('SIGNERS', SIGNERS.ALICE.address, SIGNERS.BOB.address, SIGNERS.CHARLIE.address)
-    let transferAmount = oneETH.mul(10)
+    
     if ((await defaultPaymentToken.balanceOf(SIGNERS.ALICE.address)) < transferAmount){
         tx = await defaultPaymentToken.connect(SIGNERS.ALICE).freeMint(transferAmount)
         receipt = await tx.wait()
@@ -54,7 +56,9 @@ async function checkInternal(){
     receipt = await tx.wait()
     let sourceBalance = hre.ethers.utils.formatEther(await defaultPaymentToken.balanceOf(source.address))
     let CharliesAmountBefore = await defaultPaymentToken.balanceOf(SIGNERS.CHARLIE.address)
-    tx = await internalProject.connect(SIGNERS.ALICE).submitPayrollRoster([SIGNERS.CHARLIE.address], [oneETH.mul(54)])
+    tx = await internalProject.connect(SIGNERS.ALICE).submitPayrollRoster(
+        [SIGNERS.CHARLIE.address],
+        [payrollAmount])
     receipt = await tx.wait();
     console.log(CharliesAmountBefore)
     let remainingFundsAfter = hre.ethers.utils.formatEther(await internalProject.remainingFunds())

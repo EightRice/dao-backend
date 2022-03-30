@@ -614,8 +614,8 @@ async function deployAll(
     functionName = "createInternalProject"
     newContract = true
     try {
-      let _requestedAmounts = oneETH.mul(4180)
-      let _requestedMaxAmountPerPaymentCycle = oneETH.mul(105);
+      let _requestedAmounts = oneETH.mul(103400)
+      let _requestedMaxAmountPerPaymentCycle = oneETH.mul(85120);
       tx = await source.connect(SIGNERS.ALICE).createInternalProject(
         _requestedAmounts,
         _requestedMaxAmountPerPaymentCycle
