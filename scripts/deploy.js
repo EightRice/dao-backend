@@ -339,7 +339,7 @@ async function deployAll(
     
 
     try {
-      // console.log('initialRep', initialRep)
+      console.log('initialRep', initialRep)
       tx = await source.connect(SIGNERS.ALICE).importMembers(
         initialMembers,
         initialRep

@@ -1,54 +1,54 @@
 {
-  "0x2E96A1B24859D4B8b73486199160876962129265": {
-    "name": "PaymentToken",
-    "variables": [
-      "\"Mock USDC with 18 decimals\"",
-      "\"USDC\""
-    ]
-  },
-  "0xCf68657b8198017cb347cD1F643d43bAB7fDf492": {
+  "0xa77CAeBdBe121eA1630A02a016D68797F54d99A3": {
     "name": "ClientProjectFactory",
     "variables": []
   },
-  "0xc708bbd60461A2Bc8161eAF193fc4DF856af93Cf": {
+  "0x655661Ef69c3E16C91b2056BE1a2E825857b4Dd5": {
     "name": "InternalProjectFactory",
     "variables": []
   },
-  "0x95Da3A238D6f125f3986FCD008D82Cc06C49b4B1": {
+  "0xa752E4802A2D7f55721626a3eD7ecfBc14Ed3084": {
     "name": "Voting",
     "variables": []
   },
-  "0x1B4128271579F3De5E5De54Ff3D06CA8A442AD96": {
-    "name": "Source",
+  "0x6627dd5c2f95706e1ae12FdD77A91a2B9cC2d964": {
+    "name": "RepToken",
     "variables": [
-      "\"0x95Da3A238D6f125f3986FCD008D82Cc06C49b4B1\"",
-      "\"0xe063419D2A32eb1BF89eC2AFE12Ad026F9773099\""
+      "\"dOrg Reputation Token\"",
+      "\"dOrg\""
     ]
   },
-  "0xEDd9f37f480779b2395849a7A004Ef312bD4dC44": {
+  "0x7E8CB4E38dF103974c80887568C77b1AC2CAF425": {
+    "name": "Source",
+    "variables": [
+      "\"0xa752E4802A2D7f55721626a3eD7ecfBc14Ed3084\"",
+      "\"0x6627dd5c2f95706e1ae12FdD77A91a2B9cC2d964\""
+    ]
+  },
+  "0xE3bD5cd119108D7537fD531993342Df0Ac497433": {
     "name": "ClientProject",
     "variables": [
-      "\"0x1B4128271579F3De5E5De54Ff3D06CA8A442AD96\"",
+      "\"0x7E8CB4E38dF103974c80887568C77b1AC2CAF425\"",
       "\"0x6D7c87490a879d7eC8a6eA18a7A3Fb8aFC62D975\"",
       "\"0x6758903DE9b99ec6582c6f4cf1eB45b0663d6FB6\"",
       "\"0x46bF843a56E6943015D770B56Dea92B9377Bd4F4\"",
-      "\"0xe063419D2A32eb1BF89eC2AFE12Ad026F9773099\"",
-      "\"0x54AF0de287a40BE772534D185658A1382d4AfF87\"",
-      "\"0x95Da3A238D6f125f3986FCD008D82Cc06C49b4B1\"",
+      "\"0x6627dd5c2f95706e1ae12FdD77A91a2B9cC2d964\"",
+      "\"0xE2Cd81D75B1152c73a3359485B989BE10dD8021E\"",
+      "\"0xa752E4802A2D7f55721626a3eD7ecfBc14Ed3084\"",
       "\"0x2E96A1B24859D4B8b73486199160876962129265\"",
       "45"
     ]
   },
-  "0x01Ba6cC7456bBb821Bf3292E08a445Eca1778412": {
+  "0x93f13b197638d7b6544A55092c5247008a8018fc": {
     "name": "InternalProject",
     "variables": [
-      "\"0x1B4128271579F3De5E5De54Ff3D06CA8A442AD96\"",
+      "\"0x7E8CB4E38dF103974c80887568C77b1AC2CAF425\"",
       "\"0x6D7c87490a879d7eC8a6eA18a7A3Fb8aFC62D975\"",
-      "\"0x95Da3A238D6f125f3986FCD008D82Cc06C49b4B1\"",
+      "\"0xa752E4802A2D7f55721626a3eD7ecfBc14Ed3084\"",
       "45",
       "300",
-      "\"4180000000000000000000\"",
-      "\"105000000000000000000\""
+      "\"103400000000000000000000\"",
+      "\"85120000000000000000000\""
     ]
   }
 }

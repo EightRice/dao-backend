@@ -275,7 +275,6 @@ contract Source is Poll, GasRefunds, HandlesRepToken, DAOMembership, DAOPaymentC
     }
 
     
-    
 
     modifier requiredRep() {
         require(repToken.balanceOf(msg.sender)>0, "Caller has no Rep");
@@ -293,7 +292,6 @@ contract Source is Poll, GasRefunds, HandlesRepToken, DAOMembership, DAOPaymentC
         _;
         onlyTwoCallsFlag += 1;
     }
-
 
     // modifier voteOnMotion(uint8 _motion, address _address) {
     //     // Motion motion = Motion.setDefaultPaymentToken;
