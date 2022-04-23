@@ -6,13 +6,11 @@ import "../Token/RepToken.sol";
 import "../Arbitration/Arbitration.sol";
 import "../DAO/IDAO.sol";
 import "../Voting/IVoting.sol";
+import {PayrollRoster, Payout} from "../Payment/ProjectPayments.sol";
 
-struct Payout {
-    address payee;
-    uint256 amountInStableCointEquivalent;
-}
 
-contract InternalProject { 
+
+contract InternalProject is PayrollRoster{ 
     // maybe inherit from mutual parent with Project contract.
 
     // possibility to turn project into ongoing
@@ -43,7 +41,6 @@ contract InternalProject {
     uint256 public remainingFunds;
     uint256 public allowedSpendingsPerPaymentCycle;
 
-    Payout[] public payouts;
 
     uint256 internal thisCyclesRequestedAmount;
     address payable[] public team;
@@ -110,8 +107,6 @@ contract InternalProject {
     }
 
 
-    event PayrollRosterSubmitted(address payable[] payees, uint256[] amounts);
-
     function submitPayrollRoster(
         address payable[] memory _payees,
         uint256[] memory _amounts) 
@@ -119,24 +114,14 @@ contract InternalProject {
     
     {
         _registerVote();
-        // bool withinFirstSubmissionPeriod = block.timestamp <= source.getFirstPayrollSubmissionDue();
-        // bool withinSecondSubmissionPeriod = block.timestamp > source.getVetoDue() && block.timestamp <= source.getSecondPayrollSubmissionDue();
-
-        // require(withinFirstSubmissionPeriod || withinSecondSubmissionPeriod);
-
         require(_payees.length == _amounts.length, "payee length and amounts length need to match");
 
         uint256 _thisCyclesRequestedAmount;
         for (uint256 i=0; i<_payees.length; i++){
-
             _thisCyclesRequestedAmount += _amounts[i] ;
-
-            payouts.push(Payout({
-                payee: _payees[i],
-                amountInStableCointEquivalent: _amounts[i]
-            }));
-
         }
+
+        _submitPayrollRoster(_payees, _amounts); 
 
         require(_thisCyclesRequestedAmount <= allowedSpendingsPerPaymentCycle, "requested amount supersedes cycle allowance");
         require(_thisCyclesRequestedAmount <= remainingFunds, "requested amount supersedes remaining funds"); 
@@ -144,7 +129,6 @@ contract InternalProject {
         // set requested amount for this cycle.
         thisCyclesRequestedAmount = _thisCyclesRequestedAmount;
         
-        emit PayrollRosterSubmitted(_payees, _amounts);
         // emit PayrollRosterSubmitted();  // maybe milestones[milestoneIndex].payrollVetoDeadline
     }
 
@@ -163,7 +147,7 @@ contract InternalProject {
             IERC20(defaultPaymentToken).transferFrom(
                 address(source),
                 payouts[i].payee,
-                (payouts[i].amountInStableCointEquivalent * shareValue) / conversionRate);
+                (payouts[i].amount * shareValue) / conversionRate);
             
             // transfer the rest as a redeemable DeptToken and allocate RepToken
             /*if (shareValue>0){
@@ -175,7 +159,7 @@ contract InternalProject {
 
             source.mintRepTokens(
                 payouts[i].payee,
-                (payouts[i].amountInStableCointEquivalent * shareValue) / 1e18);
+                (payouts[i].amount * shareValue) / 1e18);
 
             // NOTE: maybe deduct the expenses from the allowed spendings per month and transfer the rest over to the next months allowed spendings. 
             

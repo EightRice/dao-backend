@@ -2,22 +2,26 @@
 pragma solidity ^0.8.7;
 
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../Token/RepToken.sol";
 import "../Arbitration/Arbitration.sol";
 import "../DAO/IDAO.sol";
 import "../Voting/IVoting.sol";
 
+import {HandleDAOInteraction} from "../DAO/DAO.sol";
+
+import {PayrollRoster, Payroll, HandlePaymentToken} from "../Payment/ProjectPayments.sol";
+
+
+
+
 /// @title Main Project contract
 /// @author dOrg
 /// @dev Experimental status
 /// @custom:experimental This is an experimental contract.
-contract ClientProject{
+contract ClientProject is HandleDAOInteraction, HandlePaymentToken, PayrollRoster{
     /* ========== CONTRACT VARIABLES ========== */
 
-    ISource public source;
     IRepToken public repToken;
-    IERC20 public paymentToken;
     ArbitrationEscrow public arbitrationEscrow;
     IVoting public voting;
 
@@ -122,8 +126,10 @@ contract ClientProject{
                 address _arbitrationEscrow,   //TODO! Better use address!
                 address _votingAddress,
                 address _paymentTokenAddress,
-                uint256 _votingDuration){
-         
+                uint256 _votingDuration)
+        HandlePaymentToken(_paymentTokenAddress)
+        HandleDAOInteraction(_sourceAddress)
+    {
         status=ProjectStatus.proposal;
         sourcingLead=_sourcingLead;
         team.push(sourcingLead);
@@ -131,13 +137,12 @@ contract ClientProject{
         client=_client;
         arbitrationEscrow=ArbitrationEscrow(_arbitrationEscrow);
         arbiter=_arbiter;
-        source = ISource(_sourceAddress);
         repToken = IRepToken(repTokenAddress);
         startingTime = block.timestamp;
         votingDuration = _votingDuration;
         voting = IVoting(_votingAddress);
         // use default ratio between Rep and Payment
-        _changePaymentMethod(_paymentTokenAddress, repWeiPerPaymentGwei);
+        
         
     }
 
@@ -177,11 +182,10 @@ contract ClientProject{
     }
 
 
-    // add function if its vetoed
-    function vetoPayrollRoster(uint256 milestoneIndex) public{
+    // add function if its vetoed   
+    function vetoPayrollRoster() external {
         require(_isTeamMember[msg.sender]);
-        uint256 [] memory NoPayments;
-        milestones[milestoneIndex].payments = NoPayments;  // TODO: think about storage 
+        _vetoPayrollRoster();
     }
 
     /* ========== REPUTATION ========== */
@@ -244,7 +248,6 @@ contract ClientProject{
         sourcingLead = payable(msg.sender);
         // reset all the votes maybe.
     }
-
 
     /* ========== PROJECT HANDLING ========== */
 
@@ -319,13 +322,11 @@ contract ClientProject{
         paymentToken.transfer(client, _amount);
     }
 
+    
     // dev A doesnt withdraw --> then the con 
-    function submitPayrollRoster(uint256 milestoneIndex, address payable [] memory _payees, uint256[] memory _amounts) external {
-        require(msg.sender==sourcingLead && _payees.length == _amounts.length);
-        milestones[milestoneIndex].payrollVetoDeadline = block.timestamp + vetoDurationForPayments;
-        milestones[milestoneIndex].payees=_payees;
-        milestones[milestoneIndex].payments=_amounts;
-        emit PayrollRosterSubmitted(milestoneIndex);  // maybe milestones[milestoneIndex].payrollVetoDeadline
+    function submitPayrollRoster(address[] memory _payees, uint256[] memory _amounts) external {
+        require(msg.sender==sourcingLead);
+        _submitPayrollRoster(_payees, _amounts);
     }
 
     function _releaseMilestoneFunds(uint256 milestoneIndex) internal {

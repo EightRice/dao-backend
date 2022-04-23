@@ -13,6 +13,19 @@ import {Poll, PollStatus} from "../Voting/Poll.sol";
 import {DAOMembership} from "./Membership.sol";
 import {DAOPaymentTokens, DAOPaymentCycle} from "../Payment/DAOPayments.sol";
 import {GasRefunds} from "../Payment/GasRefunds.sol";
+import {ISource} from "./IDAO.sol";
+
+
+abstract contract HandleDAOInteraction {
+    ISource public source;
+
+    constructor (address _sourceAddress) {
+        source = ISource(_sourceAddress);
+    }
+
+
+}
+
 
 /// @title Main DAO contract
 /// @author dOrg
