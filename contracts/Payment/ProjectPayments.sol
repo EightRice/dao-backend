@@ -20,14 +20,14 @@ abstract contract HandlePaymentToken {
 
 abstract contract PayrollRoster is HandleDAOInteraction, HandlePaymentToken {
 
-    event PayrollRosterSubmitted(address payable[] payees, uint256[] amounts);
+    event PayrollRosterSubmitted(address[] payees, uint256[] amounts);
 
     Payroll[] public payrolls;
 
     uint256 constant VETO_TIME = 5 minutes;
 
     function _submitPayrollRoster(
-        address payable[] calldata _payees,
+        address[] calldata _payees,
         uint256[] calldata _amounts) 
     internal 
     {
@@ -53,7 +53,7 @@ abstract contract PayrollRoster is HandleDAOInteraction, HandlePaymentToken {
         payrolls[payrolls.length - 1].amounts = NoPayments;
     }
 
-    function payout () external {
+    function _payout() internal {
         require(block.timestamp >= payrolls[payrolls.length - 1].vetoDeadline);
 
         for (uint i=0; i<payrolls[payrolls.length-1].payees.length; i++){
