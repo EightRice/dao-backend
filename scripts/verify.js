@@ -49,10 +49,11 @@ async function verifyThisContract(address) {
     deploymentVariablesList = Object.keys(deploymentVariables)
     let fileName = "deploy-vars-" + deploymentVariables[address]["name"] + ".js"
     let filePath = `scripts/verification/${hre.network.name}/${fileName}`
-    let arguments = ` --network ${hre.network.name} --constructor-args ${filePath} ${address}`  
+    let fullyQualifiedContractName = deploymentVariables[deploymentAddress]["contract-path"] + ':' + deploymentVariables[deploymentAddress]["name"]
+    let arguments = ` --network ${hre.network.name} --contract ${fullyQualifiedContractName} --constructor-args ${filePath} ${address}`  
     cmd = "npx hardhat verify " + arguments;
     console.log(cmd) 
-    await execShellCommand(cmd);
+    // await execShellCommand(cmd);
 }
 
 async function verifyAllContracts() {
@@ -63,10 +64,11 @@ async function verifyAllContracts() {
         let deploymentAddress = deploymentVariablesList[i]
         let fileName = "deploy-vars-" + deploymentVariables[deploymentAddress]["name"] + ".js"
         let filePath = `scripts/verification/${hre.network.name}/${fileName}`
-        let arguments = ` --network ${hre.network.name} --constructor-args ${filePath} ${deploymentAddress}` 
+        let fullyQualifiedContractName = deploymentVariables[deploymentAddress]["contract-path"] + ':' + deploymentVariables[deploymentAddress]["name"]
+        let arguments = ` --network ${hre.network.name} --contract ${fullyQualifiedContractName} --constructor-args ${filePath} ${deploymentAddress}` 
         cmd = "npx hardhat verify " + arguments;
         console.log(cmd) 
-        await execShellCommand(cmd);
+        // await execShellCommand(cmd);
     }
 
 }

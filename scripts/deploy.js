@@ -141,8 +141,9 @@ async function deployAll(
   transferToAllDorgHolders,
   verbose)
 {
+  if (verbose){console.log('We are deploying all contracts now')}
   await loadSigners()
-  
+  if (verbose){console.log('We loaded the signers')}
   if (deployPaymentToken){
 
     // Deploy PaymentToken
@@ -155,6 +156,7 @@ async function deployAll(
       USDCCoin = await TestPaymentTokenFactory.connect(SIGNERS.ALICE).deploy(deploymentArgs[0], deploymentArgs[1]); 
       deployInfo["deploymentVariables"][USDCCoin.address] = {
         "name": contractName,
+        "contract-path": "contracts/Token/TestPaymentToken.sol",
         "variables": ['"Mock USDC with 18 decimals"', '"USDC"']}
       deployTx = await USDCCoin.deployTransaction.wait()
       errorMessage = "None"
@@ -166,17 +168,22 @@ async function deployAll(
   }
   
   //
+  if (verbose){console.log('We are about to deploy the clientProjectFactory')}
   contractName = "ClientProjectFactory"
   functionName = "constructor"
   newContract = true
   try {
     ClientProjectFactoryFactory = await hre.ethers.getContractFactory(contractName);
     deploymentArgs = []
+    if (verbose){console.log(`The signer alice has the following address ${SIGNERS.ALICE.address}.`)}
     clientProjectFactory = await ClientProjectFactoryFactory.connect(SIGNERS.ALICE).deploy()
     deployInfo["deploymentVariables"][clientProjectFactory.address] = {
       "name": contractName,
+      "contract-path": "contracts/Factory/ClientProjectFactory.sol",
       "variables": deploymentArgs}
+    if (verbose){console.log('We are deploying the clientProject Deploy Factory now')}
     deployTx = await clientProjectFactory.deployTransaction.wait()
+    if (verbose){console.log('We deployed the client Project Deploy factory.')}
     errorMessage = "None"
     updateDeployInfo(contractName, functionName, clientProjectFactory.address, deployTx.gasUsed.toString(), true, errorMessage, newContract, contractName, clientProjectFactory.address, verbose)
   } catch(err) {
@@ -193,6 +200,7 @@ async function deployAll(
     internalProjectFactory = await InternalProjectFactoryFactory.connect(SIGNERS.ALICE).deploy()
     deployInfo["deploymentVariables"][internalProjectFactory.address] = {
       "name": contractName,
+      "contract-path": "contracts/Factory/InternalProjectFactory.sol",
       "variables": deploymentArgs}
     deployTx = await internalProjectFactory.deployTransaction.wait()
     errorMessage = "None"
@@ -211,6 +219,7 @@ async function deployAll(
     voting = await InternalProjectFactoryFactory.connect(SIGNERS.ALICE).deploy()
     deployInfo["deploymentVariables"][voting.address] = {
       "name": contractName,
+      "contract-path": "contracts/Voting/Poll.sol",
       "variables": deploymentArgs}
     deployTx = await voting.deployTransaction.wait()
     errorMessage = "None"
@@ -234,6 +243,7 @@ async function deployAll(
       
       deployInfo["deploymentVariables"][repToken.address] = {
         "name": "RepToken",
+        "contract-path": "contracts/Token/RepToken.sol",
         "variables": [`"${deploymentArgs[0]}"`, `"${deploymentArgs[1]}"`]}
       
       deployTx = await repToken.deployTransaction.wait()
@@ -272,6 +282,7 @@ async function deployAll(
     
     deployInfo["deploymentVariables"][source.address] = {
       "name": contractName,
+      "contract-path": "contracts/DAO/DAO.sol",
       "variables": [`"${deploymentArgs[0]}"`, `"${deploymentArgs[1]}"`]}
   
    deployTx = await source.deployTransaction.wait()
@@ -530,6 +541,7 @@ async function deployAll(
 
       deployInfo["deploymentVariables"][clientProjectAddress] = {
         "name": "ClientProject",
+        "contract-path": "contracts/Project/Project.sol",
         "variables": [
           `"${source.address}"`,
           `"${SIGNERS.ALICE.address}"`,
@@ -629,6 +641,7 @@ async function deployAll(
       let paymentInterval = (await source.paymentInterval()).toNumber()
       deployInfo["deploymentVariables"][internalProjectAddress] = {
         "name": "InternalProject",
+        "contract-path": "contracts/Project/Department.sol",
         "variables": [
           `"${source.address}"`,
           `"${SIGNERS.ALICE.address}"`,
