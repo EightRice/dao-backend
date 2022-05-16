@@ -11,11 +11,21 @@ struct Payroll {
     uint256 vetoDeadline;
 }
 
-abstract contract HandlePaymentToken {
+abstract contract HandlePaymentToken is HandleDAOInteraction{
     IERC20 public paymentToken;
-    constructor(address _paymentTokenAddress) {
+
+    function _setPaymentToken(address _paymentTokenAddress) internal {
         paymentToken = IERC20(_paymentTokenAddress);
     }
+
+    function _getPaymentTokenFromSource() internal view returns(IERC20 _paymentToken) {
+        _paymentToken = IERC20(source.getDefaultPaymentToken());
+    }
+
+    function _getPaymentTokenConversionRate() internal view returns(uint256 _conversionRate){
+        _conversionRate = source.getConversionRate(source.getDefaultPaymentToken());
+    }
+    
 }
 
 abstract contract PayrollRoster is HandleDAOInteraction, HandlePaymentToken {
@@ -59,6 +69,21 @@ abstract contract PayrollRoster is HandleDAOInteraction, HandlePaymentToken {
         for (uint i=0; i<payrolls[payrolls.length-1].payees.length; i++){
             paymentToken.transfer(payrolls[payrolls.length-1].payees[i], payrolls[payrolls.length-1].amounts[i]);
             source.mintRepTokens(payrolls[payrolls.length-1].payees[i], payrolls[payrolls.length-1].amounts[i]);
+        }
+    }
+
+    function _payout(uint256 shareValue) internal {
+        require(block.timestamp >= payrolls[payrolls.length - 1].vetoDeadline, "deadline expired");
+        require(shareValue<=1e18, "value should be less than 1e18"); 
+        uint256 conversionRate = _getPaymentTokenConversionRate();
+        for (uint i=0; i<payrolls[payrolls.length-1].payees.length; i++){
+            _getPaymentTokenFromSource().transferFrom(
+                address(source),
+                payrolls[payrolls.length-1].payees[i],
+                (payrolls[payrolls.length-1].amounts[i] * shareValue) / conversionRate);
+            source.mintRepTokens(
+                payrolls[payrolls.length-1].payees[i],
+                (payrolls[payrolls.length-1].amounts[i] * shareValue) / 1e18);
         }
     }
 }

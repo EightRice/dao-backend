@@ -58,7 +58,9 @@ contract RepToken is ERC20 {
         uint256 amount
     ) internal override pure {
         require(false, "non-transferrable");
-        
+        sender;
+        recipient;
+        amount;
     }
 
     function mint(address holder, uint256 amount) external onlyDAO {

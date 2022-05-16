@@ -104,9 +104,9 @@ contract ClientProject is HandleDAOInteraction, HandlePaymentToken, PayrollRoste
                 address _votingAddress,
                 address _paymentTokenAddress,
                 uint256 _votingDuration)
-        HandlePaymentToken(_paymentTokenAddress)
         HandleDAOInteraction(_sourceAddress)
     {
+        _setPaymentToken(_paymentTokenAddress);
         status=ProjectStatus.proposal;
         sourcingLead=_sourcingLead;
         team.push(sourcingLead);

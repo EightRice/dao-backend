@@ -6,11 +6,13 @@ import "../Token/RepToken.sol";
 import "../Arbitration/Arbitration.sol";
 import "../DAO/IDAO.sol";
 import "../Voting/IVoting.sol";
-import {PayrollRoster, Payout} from "../Payment/ProjectPayments.sol";
+
+import {HandleDAOInteraction} from "../DAO/DAO.sol";
+import {HandlePaymentToken, PayrollRoster, Payroll} from "../Payment/ProjectPayments.sol";
 
 
 
-contract InternalProject is PayrollRoster{ 
+contract InternalProject is HandleDAOInteraction,HandlePaymentToken, PayrollRoster{ 
     // maybe inherit from mutual parent with Project contract.
 
     // possibility to turn project into ongoing
@@ -27,8 +29,6 @@ contract InternalProject is PayrollRoster{
 
     IVoting public voting;
     RepToken public repToken;
-    ISource public source;
-    IERC20 public paymentToken;
 
     uint256 public startingTime;
     uint256 public votingDuration;
@@ -58,14 +58,14 @@ contract InternalProject is PayrollRoster{
                 uint256 _votingDuration,
                 uint256 _paymentInterval,
                 uint256 _requestedAmounts,
-                uint256 _requestedMaxAmountPerPaymentCycle){   
+                uint256 _requestedMaxAmountPerPaymentCycle)
+                HandleDAOInteraction(_sourceAddress){   
         paymentInterval = _paymentInterval;
         remainingFunds = _requestedAmounts;
         allowedSpendingsPerPaymentCycle = _requestedMaxAmountPerPaymentCycle;
         teamLead = _teamLead;
         team.push(teamLead);
         _isTeamMember[teamLead] = true;
-        source = ISource(_sourceAddress);
         repToken=RepToken(repTokenAddress);
         startingTime = block.timestamp;
         votingDuration = _votingDuration;
@@ -108,13 +108,11 @@ contract InternalProject is PayrollRoster{
 
 
     function submitPayrollRoster(
-        address payable[] memory _payees,
-        uint256[] memory _amounts) 
+        address[] calldata _payees,
+        uint256[] calldata _amounts) 
     external 
-    
     {
         _registerVote();
-        require(_payees.length == _amounts.length, "payee length and amounts length need to match");
 
         uint256 _thisCyclesRequestedAmount;
         for (uint256 i=0; i<_payees.length; i++){
@@ -138,35 +136,15 @@ contract InternalProject is PayrollRoster{
     external 
     onlyDAO
     {
-        require(shareValue<=1e18); 
+        
+        _payout(shareValue);
 
-        address defaultPaymentToken = source.getDefaultPaymentToken();
-        uint256 conversionRate = source.getConversionRate(defaultPaymentToken);
-
-        for (uint256 i; i<payouts.length; i++){
-            IERC20(defaultPaymentToken).transferFrom(
-                address(source),
-                payouts[i].payee,
-                (payouts[i].amount * shareValue) / conversionRate);
+        // NOTE: maybe deduct the expenses from the allowed spendings per month and transfer the rest over to the next months allowed spendings. 
             
-            // transfer the rest as a redeemable DeptToken and allocate RepToken
-            /*if (shareValue>0){
-                deptToken.transferFrom(
-                    address(source),
-                    payouts[i].payee,
-                    (payouts[i].amountInStableCointEquivalent * (1e18 - shareValue)) / 1e18);
-            }*/
-
-            source.mintRepTokens(
-                payouts[i].payee,
-                (payouts[i].amount * shareValue) / 1e18);
-
-            // NOTE: maybe deduct the expenses from the allowed spendings per month and transfer the rest over to the next months allowed spendings. 
-            
-        }
+        
 
         // delete all cached payouts, payoutTokens and thisCyclesRequestedAmountPerToken
-        delete payouts;
+        // delete payouts;
         // also delte this cylces total requested amount.
         thisCyclesRequestedAmount = 0;      
 

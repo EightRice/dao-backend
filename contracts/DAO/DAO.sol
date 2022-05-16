@@ -23,7 +23,6 @@ abstract contract HandleDAOInteraction {
         source = ISource(_sourceAddress);
     }
 
-
 }
 
 
@@ -122,6 +121,10 @@ contract Source is Poll, GasRefunds, HandlesRepToken, DAOMembership, DAOPaymentC
     
     event ValueReceived(address user, uint amount);
     
+    receive() external payable {
+        emit ValueReceived(msg.sender, msg.value);
+    }
+
     fallback() external payable {
         emit ValueReceived(msg.sender, msg.value);
     }
