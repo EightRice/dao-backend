@@ -412,6 +412,9 @@ async function deployAll(
       let richSigner = SIGNERS.ALICE;
       tx = await defaultPaymentToken.connect(richSigner).freeMint(maxAllowance)
       receipt = await tx.wait()
+      let richClient = SIGNERS.CHARLIE;
+      tx = await defaultPaymentToken.connect(richClient).freeMint(maxAllowance)
+      receipt = await tx.wait()
 
       errorMessage = "None"
       updateDeployInfo(contractName, functionName, defaultPaymentToken.address, receipt.gasUsed.toString(), true, errorMessage, newContract, "", "", verbose)
@@ -447,6 +450,9 @@ async function deployAll(
     } catch(err) {
       updateDeployInfo(contractName, functionName, "None", 0, false, err.toString(), newContract, "", "", verbose)
     }
+  } else {
+    tx = await defaultPaymentToken.connect(SIGNERS.ALICE).transfer(SIGNERS.CHARLIE, oneETH.mul(10));
+    receipt = await tx.wait()
   }
   
   
@@ -619,6 +625,25 @@ async function deployAll(
     } catch(err) {
       updateDeployInfo(contractName, functionName, "None", 0, false, err.toString(), newContract, "", "", verbose)
     }
+
+    // send 500 to the clientProject
+    contractName = "ClientProject"
+    functionName = "submitPayrollRoster"
+    newContract = false
+    try {
+      tx = await defaultPaymentToken.connect(SIGNERS.CHARLIE).transfer(source.address, oneETH.mul(3));
+      receipt = await tx.wait()
+      let _payees = [SIGNERS.ALICE.address, SIGNERS.BOB.address];
+      let _amounts = [oneETH.mul(1), oneETH.mul(2)];
+      let balanceBobBefore = hre.ethers.utils.formatEther(await defaultPaymentToken.balanceOf(SIGNERS.BOB.address))
+      let balanceAliceBefore = hre.ethers.utils.formatEther(await defaultPaymentToken.balanceOf(SIGNERS.ALICE.address))
+      tx = await firstClientProject.connect(SIGNERS.ALICE).submitPayrollRoster(_payees, _amounts);
+      receipt = await tx.wait()
+      console.log(`submitted Payroll Roster. Balance of Bob is ${balanceBobBefore} and of Alice is ${balanceAliceBefore}.`)
+    } catch(err) {
+      console.log(err.toString())
+    }
+    // submitPayrollRoster(address[] memory _payees, uint256[] memory _amounts) external {
     
 
 

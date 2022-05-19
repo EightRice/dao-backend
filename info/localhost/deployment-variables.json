@@ -1,57 +1,65 @@
 {
-  "0xA94A3572343f0684FB2C3584853992D47e4F9261": {
+  "0x4DE7f4FA5622E725c70CFe27A882583674210ac5": {
     "name": "PaymentToken",
+    "contract-path": "contracts/Token/TestPaymentToken.sol",
     "variables": [
       "\"Mock USDC with 18 decimals\"",
       "\"USDC\""
     ]
   },
-  "0x07803d183f85D31AbE3D0A7C6f7479A99363a33A": {
+  "0x7af6794ce0Babe34B4fD129882B0FfB752c372CE": {
     "name": "ClientProjectFactory",
+    "contract-path": "contracts/Factory/ClientProjectFactory.sol",
     "variables": []
   },
-  "0x346082DB603d864a2a1ab16B13125bB6B16c7e03": {
+  "0xb7f03999c29AdBeB4E740766f0796b5849ac97c0": {
     "name": "InternalProjectFactory",
+    "contract-path": "contracts/Factory/InternalProjectFactory.sol",
     "variables": []
   },
-  "0x23b8F911CD48dAecE4963f2CD40C56De2237A3B0": {
+  "0x35Bc5c81BF67e8B1f6e1965574a9589a1bDAe335": {
     "name": "Voting",
+    "contract-path": "contracts/Voting/Poll.sol",
     "variables": []
   },
-  "0x88d64Af67f4155823c3291Bf64f38e5624250e80": {
+  "0x4761D0E6241E5edc1061c9A475248934e78B4A2D": {
     "name": "RepToken",
+    "contract-path": "contracts/Token/RepToken.sol",
     "variables": [
       "\"dOrg Reputation Token\"",
       "\"dOrg\""
     ]
   },
-  "0xF88fa119a347e2c527f3d0F2Dc154882E2C946CC": {
+  "0xe391fDe59f9f10E2E1aC68CaA516D9984927e0Ef": {
     "name": "Source",
+    "contract-path": "contracts/DAO/DAO.sol",
     "variables": [
-      "\"0x23b8F911CD48dAecE4963f2CD40C56De2237A3B0\"",
-      "\"0x88d64Af67f4155823c3291Bf64f38e5624250e80\""
+      "\"0x35Bc5c81BF67e8B1f6e1965574a9589a1bDAe335\"",
+      "\"0x4761D0E6241E5edc1061c9A475248934e78B4A2D\""
     ]
   },
-  "0xb3E20e29A1AB378F5be6d44F272d35c7e831b508": {
+  "0xc4C0320107589a7c872b7521f26F781Bde585045": {
     "name": "ClientProject",
+    "contract-path": "contracts/Project/Project.sol",
     "variables": [
-      "\"0xF88fa119a347e2c527f3d0F2Dc154882E2C946CC\"",
+      "\"0xe391fDe59f9f10E2E1aC68CaA516D9984927e0Ef\"",
       "\"0x41923d8c6053517b9C5ABe4e2b506A26946771d4\"",
       "\"0x21ce0c2a2e93598D4B5C9D2063a83846Ee1296AE\"",
       "\"0xBe0b5E62952b110e92a8C67baD4FBe5321C7d678\"",
-      "\"0x88d64Af67f4155823c3291Bf64f38e5624250e80\"",
-      "\"0x4e5AD119896BAc6a0488CFFAc9cb398ce8d1c9A4\"",
-      "\"0x23b8F911CD48dAecE4963f2CD40C56De2237A3B0\"",
-      "\"0xA94A3572343f0684FB2C3584853992D47e4F9261\"",
+      "\"0x4761D0E6241E5edc1061c9A475248934e78B4A2D\"",
+      "\"0xA1C7979F9Ac77c86a61F7E3E96d86B2286B4A09b\"",
+      "\"0x35Bc5c81BF67e8B1f6e1965574a9589a1bDAe335\"",
+      "\"0x4DE7f4FA5622E725c70CFe27A882583674210ac5\"",
       "2"
     ]
   },
-  "0xfa1D0A421d756C284A8a9Cf161fA34A6574081F4": {
+  "0xc1F87F56b30fa388536EffE657f31661BfE19987": {
     "name": "InternalProject",
+    "contract-path": "contracts/Project/Department.sol",
     "variables": [
-      "\"0xF88fa119a347e2c527f3d0F2Dc154882E2C946CC\"",
+      "\"0xe391fDe59f9f10E2E1aC68CaA516D9984927e0Ef\"",
       "\"0x41923d8c6053517b9C5ABe4e2b506A26946771d4\"",
-      "\"0x23b8F911CD48dAecE4963f2CD40C56De2237A3B0\"",
+      "\"0x35Bc5c81BF67e8B1f6e1965574a9589a1bDAe335\"",
       "2",
       "300",
       "\"103400000000000000000000\"",

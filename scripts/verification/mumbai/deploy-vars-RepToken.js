@@ -1,4 +1,4 @@
 module.exports = [
-	"DORG",
-	"DORG",
+	"dOrg Reputation Token",
+	"dOrg",
 ]
