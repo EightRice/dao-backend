@@ -383,7 +383,7 @@ async function deployAll(
   functionName = "setDeploymentFactories"
   newContract = false
   try {
-    tx = await source.setDeploymentFactories(
+    tx = await source.connect(SIGNERS.ALICE).setDeploymentFactories(
       clientProjectFactory.address,
       internalProjectFactory.address
     )
@@ -395,11 +395,23 @@ async function deployAll(
   }
 
   contractName = "PaymentToken"
-  defaultPaymentToken = new Object()
+  defaultPaymentToken = null
+  console.log("hardcodedPaymentTokenAddress", hardcodedPaymentTokenAddress)
+  console.log('deployInfo["contracts"][contractName]', deployInfo["contracts"][contractName])
   if (deployInfo["contracts"][contractName]) {
-    defaultPaymentToken = await hre.ethers.getContractAt(contractName, deployInfo["contracts"][contractName], SIGNERS.BOB);
+    try {
+      defaultPaymentToken = await hre.ethers.getContractAt(contractName, deployInfo["contracts"][contractName], SIGNERS.BOB);
+      console.log("instatiates deployed version")
+    } catch (err) {
+      console.log("get ContractAt", err.toString())
+    }
   } else {
-    defaultPaymentToken = await hre.ethers.getContractAt(contractName, hardcodedRepTokenAddress, SIGNERS.BOB);
+    try {
+      defaultPaymentToken = await hre.ethers.getContractAt(contractName, hardcodedPaymentTokenAddress, SIGNERS.BOB);
+      console.log("instatiates existing version")
+    } catch (err) {
+      console.log("get ContractAt (already exists)", err.toString())
+    }
   }
 
 
@@ -451,7 +463,7 @@ async function deployAll(
       updateDeployInfo(contractName, functionName, "None", 0, false, err.toString(), newContract, "", "", verbose)
     }
   } else {
-    tx = await defaultPaymentToken.connect(SIGNERS.ALICE).transfer(SIGNERS.CHARLIE, oneETH.mul(10));
+    tx = await defaultPaymentToken.connect(SIGNERS.ALICE).transfer(SIGNERS.CHARLIE.address, oneETH.mul(10));
     receipt = await tx.wait()
   }
   
