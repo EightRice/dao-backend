@@ -256,7 +256,7 @@ contract ClientProject is HandleDAOInteraction, HandlePaymentToken, PayrollRoste
     
     // dev A doesnt withdraw --> then the con 
     function submitPayrollRoster(address[] memory _payees, uint256[] memory _amounts) external {
-        require(msg.sender==sourcingLead);
+        require(msg.sender==sourcingLead, "only sourcing Lead");
         _submitPayrollRoster(_payees, _amounts);
     }
 

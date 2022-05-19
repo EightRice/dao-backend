@@ -34,7 +34,7 @@ abstract contract PayrollRoster is HandleDAOInteraction, HandlePaymentToken {
 
     Payroll[] public payrolls;
 
-    uint256 constant VETO_TIME = 5 minutes;
+    uint256 constant VETO_TIME = 0 minutes; //5 minutes;
 
     function _submitPayrollRoster(
         address[] memory _payees,
@@ -46,8 +46,8 @@ abstract contract PayrollRoster is HandleDAOInteraction, HandlePaymentToken {
         uint256 latestIndex = payrolls.length;
         payrolls.push(newPayroll);
         for (uint256 i=0; i<_payees.length; i++){
-            payrolls[latestIndex].payees[i] = _payees[i];
-            payrolls[latestIndex].amounts[i] =_amounts[i];
+            payrolls[latestIndex].payees.push(_payees[i]);
+            payrolls[latestIndex].amounts.push(_amounts[i]);
         }
         newPayroll.vetoDeadline = block.timestamp + VETO_TIME;
 

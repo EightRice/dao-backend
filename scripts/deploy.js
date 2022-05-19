@@ -631,10 +631,12 @@ async function deployAll(
     functionName = "submitPayrollRoster"
     newContract = false
     try {
-      tx = await defaultPaymentToken.connect(SIGNERS.CHARLIE).transfer(source.address, oneETH.mul(3));
+      console.log("")
+      tx = await defaultPaymentToken.connect(SIGNERS.CHARLIE).transfer(firstClientProject.address, oneETH.mul(3));
       receipt = await tx.wait()
       let _payees = [SIGNERS.ALICE.address, SIGNERS.BOB.address];
       let _amounts = [oneETH.mul(1), oneETH.mul(2)];
+      console.log('payees', _payees, 'amounts', _amounts, "\n")
       let balanceBobBefore = hre.ethers.utils.formatEther(await defaultPaymentToken.balanceOf(SIGNERS.BOB.address))
       let balanceAliceBefore = hre.ethers.utils.formatEther(await defaultPaymentToken.balanceOf(SIGNERS.ALICE.address))
       tx = await firstClientProject.connect(SIGNERS.ALICE).submitPayrollRoster(_payees, _amounts);
@@ -643,8 +645,22 @@ async function deployAll(
     } catch(err) {
       console.log(err.toString())
     }
-    // submitPayrollRoster(address[] memory _payees, uint256[] memory _amounts) external {
-    
+
+    contractName = "clientProject"
+    functionName = "batchPayout"
+
+    try {
+      let balanceClientProjectBefore = hre.ethers.utils.formatEther(await defaultPaymentToken.balanceOf(firstClientProject.address))
+      tx = await firstClientProject.connect(SIGNERS.ALICE).batchPayout();
+      receipt = await tx.wait()
+      console.log("batch payout was done successfully.")
+      let balanceClientProjectAfter = hre.ethers.utils.formatEther(await defaultPaymentToken.balanceOf(firstClientProject.address))
+      let balanceBobAfter = hre.ethers.utils.formatEther(await defaultPaymentToken.balanceOf(SIGNERS.BOB.address))
+      let balanceAliceAfter = hre.ethers.utils.formatEther(await defaultPaymentToken.balanceOf(SIGNERS.ALICE.address))
+      console.log(`The balance of the clientProject before payout was ${balanceClientProjectBefore}. After payout it is ${balanceClientProjectAfter}.\nThe balance of Bob is ${balanceBobAfter} and of Alice is ${balanceAliceAfter}.`)
+    } catch(err) {
+      console.log(err.toString())
+    }
 
 
     contractName = "InternalProject"
