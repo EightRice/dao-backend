@@ -8,13 +8,13 @@ let deployPaymentToken = false
 let hardcodedPaymentTokenAddress = "0x2E96A1B24859D4B8b73486199160876962129265"
 let RepTokenAddress = deployRepToken ? ZeroAddress:hardcodedRepTokenAddress
 let useRealDorgAccounts = true;
-let withClientProjectCreation = true;
+let withClientProjectCreation = false;
 let verbose = true
 let TypicalMiningDurationInSec = 0;
 if (hre.network.name=="localhost") {
-  TypicalMiningDurationInSec = 2;
+  TypicalMiningDurationInSec = 0.01;
 } else {
-  TypicalMiningDurationInSec = 45;
+  TypicalMiningDurationInSec = 35;
 }
 transferToAllDorgHolders = false
 

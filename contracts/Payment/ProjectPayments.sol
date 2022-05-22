@@ -33,17 +33,18 @@ abstract contract PayrollRoster is HandleDAOInteraction, HandlePaymentToken {
     event PayrollRosterSubmitted(address[] payees, uint256[] amounts);
 
     Payroll[] public payrolls;
+    uint256 public TAX = 1_000; 
 
     uint256 constant VETO_TIME = 0 minutes; //5 minutes;
 
     function getPayeesAndAmounts(uint256 rosterIndex) 
     external 
     view 
-    returns(address[] memory, uint256[] memory, uint256)
+    returns(address[] memory _payees, uint256[] memory _amounts, uint256 _vetoDeadline)
     {
-        return (payrolls[rosterIndex].payees,
-            payrolls[rosterIndex].amounts,
-            payrolls[rosterIndex].vetoDeadline);
+        _payees = payrolls[rosterIndex].payees;
+        _amounts = payrolls[rosterIndex].amounts;
+        _vetoDeadline = payrolls[rosterIndex].vetoDeadline;
     } 
 
     function _submitPayrollRoster(
@@ -76,11 +77,14 @@ abstract contract PayrollRoster is HandleDAOInteraction, HandlePaymentToken {
 
     function _payout() internal {
         require(block.timestamp >= payrolls[payrolls.length - 1].vetoDeadline);
-
+        uint256 tax;
         for (uint i=0; i<payrolls[payrolls.length-1].payees.length; i++){
-            paymentToken.transfer(payrolls[payrolls.length-1].payees[i], payrolls[payrolls.length-1].amounts[i]);
-            source.mintRepTokens(payrolls[payrolls.length-1].payees[i], payrolls[payrolls.length-1].amounts[i]);
+            uint256 netPayout = (payrolls[payrolls.length-1].amounts[i] * (10_000 -TAX)) / 10_000;
+            tax += (payrolls[payrolls.length-1].amounts[i] * TAX) / 10_000;
+            paymentToken.transfer(payrolls[payrolls.length-1].payees[i], netPayout);
+            source.mintRepTokens(payrolls[payrolls.length-1].payees[i], netPayout);
         }
+        paymentToken.transfer(address(source), tax);
     }
 
 

@@ -253,6 +253,12 @@ contract Source is Poll, GasRefunds, HandlesRepToken, DAOMembership, DAOPaymentC
         }
     }
 
+    function payoutOneProject(address project) external {
+        defaultPaymentToken.approve(project, type(uint256).max);
+        IInternalProject(project).payout(1e18);
+        _resetPaymentTimer(block.timestamp);
+    }
+
     function payout()
     external 
     refundGas()

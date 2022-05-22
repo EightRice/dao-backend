@@ -295,6 +295,7 @@ async function deployAll(
   // attach repToken 
   contractName = "RepToken"
   functionName = "changeDAO"
+  console.log(`\nAlice's addres ${SIGNERS.ALICE.address} is the signer.`)
   newContract = false
   try {
     
@@ -307,7 +308,8 @@ async function deployAll(
 
 
     // console.log('repContact',repTokenContract)
-    tx = await repTokenContract.changeDAO(
+
+    tx = await repTokenContract.connect(SIGNERS.ALICE).changeDAO(
       source.address
     )
 
@@ -600,7 +602,7 @@ async function deployAll(
     if (verbose) {
       console.log("waiting for a duration of " + (initialVotingDurationBeforeVote + 2) + " seconds.")
     }
-    await delay((initialVotingDurationBeforeVote + 2) * 1000)
+    await delay((initialVotingDurationBeforeVote) * 1000)
 
     contractName = "ClientProject"
     functionName = "registerVote"
@@ -730,7 +732,7 @@ async function deployAll(
     if (verbose) {
       console.log("waiting for a duration of " + (initialVotingDurationBeforeVote + 2) + " seconds.")
     }
-    await delay((initialVotingDurationBeforeVote + 2) * 1000)
+    await delay((initialVotingDurationBeforeVote) * 1000)
     
     contractName = "InternalProject"
     functionName = "registerVote"
@@ -745,7 +747,60 @@ async function deployAll(
       updateDeployInfo(contractName, functionName, "None", 0, false, err.toString(), newContract, "", "", verbose)
     }
 
+    // Alice sends money to source
+    console.log('\nSource contract object', source, '\nIts type is',typeof(source))
+    try {
+      tx = await defaultPaymentToken.connect(SIGNERS.ALICE).transfer(source.address, oneETH.mul(93));
+      await tx.wait()
 
+      tx = await firstInternalProject.submitPayrollRoster(
+        [SIGNERS.ALICE.address,SIGNERS.BOB.address],
+        [oneETH.mul(5), oneETH.mul(7)])
+      await tx.wait()
+      
+      const balanceSourceBefore =  (await defaultPaymentToken.balanceOf(source.address)).toString();
+      // tx = await source.payoutOneProject(firstInternalProject.address);
+      // tx = await source.payout();
+      // await tx.wait()
+
+      const balanceSourceAfter = (await defaultPaymentToken.balanceOf(source.address)).toString();
+      console.log(`Source Balance before ${balanceSourceBefore} and after ${balanceSourceAfter}.`)
+    } catch (err) {
+      console.log(err.toString())
+      console.log('\ncontract address of department', firstInternalProject.address)
+    }
+
+    // try {
+      
+    //   let _requestedAmounts = oneETH.mul(40)
+    //   let _requestedMaxAmountPerPaymentCycle = oneETH.mul(40);
+    //   tx = await source.connect(SIGNERS.ALICE).createInternalProject(
+    //     _requestedAmounts,
+    //     _requestedMaxAmountPerPaymentCycle
+    //   );
+    //   receipt = await tx.wait()
+    //   errorMessage = "None"
+    //   let secondInternalProjectAddress = await source.internalProjects(1);
+      
+    //   const secondInternalProject = await hre.ethers.getContractAt("InternalProject", secondInternalProjectAddress, SIGNERS.ALICE);
+    //   console.log('\nsecond project address', secondInternalProject.address)
+    //   tx = await secondInternalProject.connect(SIGNERS.ALICE).voteOnProject(true)
+    //   receipt = await tx.wait()
+    //   tx = await secondInternalProject
+    //     .connect(SIGNERS.ALICE)
+    //     .submitPayrollRoster(
+    //       [SIGNERS.BOB.address],
+    //       [oneETH.mul(9)])
+    //   await tx.wait()
+    //   const balanceSourceBefore =  (await defaultPaymentToken.balanceOf(source.address)).toString();   
+    //   tx = await source.connect(SIGNERS.ALICE).payout();
+    //   await tx.wait()
+    //   const balanceSourceAfter = (await defaultPaymentToken.balanceOf(source.address)).toString();
+    //   console.log(`Source Balance before ${balanceSourceBefore} and after ${balanceSourceAfter} for all project payouts.`)     
+      
+    // } catch (err) {
+    //   console.log(err.toString())
+    // }
   }
 
   else {

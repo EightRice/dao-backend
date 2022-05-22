@@ -1,34 +1,34 @@
 [
   {
     "name": "PaymentToken",
-    "address": "0x7386E488Ff19236296C1b71E9d5F3b2e14c7F94e"
+    "address": "0xc0354bCc6C7C1c9EA7D8bF4205d1c4cCd5231eD7"
   },
   {
     "name": "ClientProjectFactory",
-    "address": "0x232C07D10662C04e92da6009f29c84eBA3f32423"
+    "address": "0x283797a35fA094e07218453E2884d291B190FA3e"
   },
   {
     "name": "InternalProjectFactory",
-    "address": "0xd89Ce5335c6f667c8F048116Fb6Eb865CA3A66e0"
+    "address": "0x3eb8d0Ca5457e512C225E22551fDBE24557f2151"
   },
   {
     "name": "Voting",
-    "address": "0xac740e4E53DdEc9f0371957EEAe23AC8fAc80a2A"
+    "address": "0x3b86609c9982F164AA07A9c0FFA1D4A52a21375e"
   },
   {
     "name": "RepToken",
-    "address": "0xc465B136b1728d995fFbCFd1dB357dC6990b739e"
+    "address": "0xB8A3521527263Ec005Ee6aC88e81Fc104aBC505A"
   },
   {
     "name": "Source",
-    "address": "0x5D83D87a0C89FA660EbBFFD616395AA05eC37763"
+    "address": "0x48b6d69BBe28aD7d8bcabC04Dc8fd99C9C5d265A"
   },
   {
     "name": "clientProjectNumberOne",
-    "address": "0x1b8A78701935e560f0197897A71206A8269119a3"
+    "address": "0x0B6d3199f55412aDD2fD942D72694b987EA82A62"
   },
   {
     "name": "firstInternalProject",
-    "address": "0xEa4c6CCA2ea3A23390611a9EcC3236e6461dC1C5"
+    "address": "0x2b6391584535A94d8C34a17126c244042dD1237c"
   }
 ]
