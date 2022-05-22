@@ -36,6 +36,16 @@ abstract contract PayrollRoster is HandleDAOInteraction, HandlePaymentToken {
 
     uint256 constant VETO_TIME = 0 minutes; //5 minutes;
 
+    function getPayeesAndAmounts(uint256 rosterIndex) 
+    external 
+    view 
+    returns(address[] memory, uint256[] memory, uint256)
+    {
+        return (payrolls[rosterIndex].payees,
+            payrolls[rosterIndex].amounts,
+            payrolls[rosterIndex].vetoDeadline);
+    } 
+
     function _submitPayrollRoster(
         address[] memory _payees,
         uint256[] memory _amounts) 
@@ -72,6 +82,8 @@ abstract contract PayrollRoster is HandleDAOInteraction, HandlePaymentToken {
             source.mintRepTokens(payrolls[payrolls.length-1].payees[i], payrolls[payrolls.length-1].amounts[i]);
         }
     }
+
+
 
     function _payout(uint256 shareValue) internal {
         require(block.timestamp >= payrolls[payrolls.length - 1].vetoDeadline, "deadline expired");

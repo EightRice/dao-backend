@@ -1,4 +1,4 @@
 module.exports = [
-	"Mock DAI",
-	"DAI",
+	"Mock USDC with 18 decimals",
+	"USDC",
 ]

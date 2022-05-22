@@ -1,7 +1,7 @@
 # Environments
 .env
 .venv
-
+*.deps*
 # Docker
 .dockerignore
 
