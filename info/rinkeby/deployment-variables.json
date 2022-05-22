@@ -1,53 +1,25 @@
 {
-  "0x301c2a5e29896a701fD716eBB73fC523172d79FF": {
+  "0x16aecf3603022d91D03b9f513DA877d5D375937f": {
     "name": "ClientProjectFactory",
     "contract-path": "contracts/Factory/ClientProjectFactory.sol",
     "variables": []
   },
-  "0xe783841C08ba666d3bF799d74fAa0A33eBBA4Dd5": {
+  "0x792fed28cE8f49124Adb48dD946E257C5D48c733": {
     "name": "InternalProjectFactory",
     "contract-path": "contracts/Factory/InternalProjectFactory.sol",
     "variables": []
   },
-  "0x4F24B6177D88f91aE64E4f3aE3b54bF64533c45b": {
+  "0xC5EaA182f45faf92e129e5EF4ACd7caFf7AfF2ec": {
     "name": "Voting",
     "contract-path": "contracts/Voting/Poll.sol",
     "variables": []
   },
-  "0xF98386668f546b11EAE42c3Cc915EbFbb2E3dD96": {
+  "0xAc109010C03F2460b2Eb581EF08A97567FD0C898": {
     "name": "Source",
     "contract-path": "contracts/DAO/DAO.sol",
     "variables": [
-      "\"0x4F24B6177D88f91aE64E4f3aE3b54bF64533c45b\"",
+      "\"0xC5EaA182f45faf92e129e5EF4ACd7caFf7AfF2ec\"",
       "\"0x6627dd5c2f95706e1ae12FdD77A91a2B9cC2d964\""
-    ]
-  },
-  "0xb0eCa9D94f1E0E89B8ec1820210473C419B23c7E": {
-    "name": "ClientProject",
-    "contract-path": "contracts/Project/Project.sol",
-    "variables": [
-      "\"0xF98386668f546b11EAE42c3Cc915EbFbb2E3dD96\"",
-      "\"0x6D7c87490a879d7eC8a6eA18a7A3Fb8aFC62D975\"",
-      "\"0x6758903DE9b99ec6582c6f4cf1eB45b0663d6FB6\"",
-      "\"0x46bF843a56E6943015D770B56Dea92B9377Bd4F4\"",
-      "\"0x6627dd5c2f95706e1ae12FdD77A91a2B9cC2d964\"",
-      "\"0x10Bbdb153169c7BA2fcAd9538256F236C5308227\"",
-      "\"0x4F24B6177D88f91aE64E4f3aE3b54bF64533c45b\"",
-      "\"0x2E96A1B24859D4B8b73486199160876962129265\"",
-      "45"
-    ]
-  },
-  "0xFeeb0df23638331A56F3370a12cdd222B1382F69": {
-    "name": "InternalProject",
-    "contract-path": "contracts/Project/Department.sol",
-    "variables": [
-      "\"0xF98386668f546b11EAE42c3Cc915EbFbb2E3dD96\"",
-      "\"0x6D7c87490a879d7eC8a6eA18a7A3Fb8aFC62D975\"",
-      "\"0x4F24B6177D88f91aE64E4f3aE3b54bF64533c45b\"",
-      "45",
-      "300",
-      "\"103400000000000000000000\"",
-      "\"85120000000000000000000\""
     ]
   }
 }

@@ -1,15 +1,15 @@
 [
   {
     "name": "ClientProjectFactory",
-    "address": "0x301c2a5e29896a701fD716eBB73fC523172d79FF"
+    "address": "0x16aecf3603022d91D03b9f513DA877d5D375937f"
   },
   {
     "name": "InternalProjectFactory",
-    "address": "0xe783841C08ba666d3bF799d74fAa0A33eBBA4Dd5"
+    "address": "0x792fed28cE8f49124Adb48dD946E257C5D48c733"
   },
   {
     "name": "Voting",
-    "address": "0x4F24B6177D88f91aE64E4f3aE3b54bF64533c45b"
+    "address": "0xC5EaA182f45faf92e129e5EF4ACd7caFf7AfF2ec"
   },
   {
     "name": "RepToken",
@@ -17,14 +17,6 @@
   },
   {
     "name": "Source",
-    "address": "0xF98386668f546b11EAE42c3Cc915EbFbb2E3dD96"
-  },
-  {
-    "name": "clientProjectNumberOne",
-    "address": "0xb0eCa9D94f1E0E89B8ec1820210473C419B23c7E"
-  },
-  {
-    "name": "firstInternalProject",
-    "address": "0xFeeb0df23638331A56F3370a12cdd222B1382F69"
+    "address": "0xAc109010C03F2460b2Eb581EF08A97567FD0C898"
   }
 ]
